@@ -1,11 +1,15 @@
 import React from "react";
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 import '@testing-library/jest-dom/vitest';
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event"
 import Auth from "../src/components/auth/Auth.tsx"
+import axios from "axios";
 
 describe("Auth page tests", () => {
+    beforeAll(() => {
+        vi.mock("axios")  
+    });
     beforeEach(() => {
         render(
             <Auth />
@@ -13,6 +17,7 @@ describe("Auth page tests", () => {
     });
     afterEach(() => {
         cleanup();
+        vi.clearAllMocks();
     });
     test("Auth page renders", () => {
         expect(screen.getByText("Log in")).toBeInTheDocument();
@@ -28,7 +33,41 @@ describe("Auth page tests", () => {
         // Check if switches back to login component
         await userEvent.click(loginButton);
         expect(screen.getByText("Sign up", {selector: "button"})).toBeInTheDocument();
+    });
+    test("api call made with form inputs for login", async() => {
 
+        vi.spyOn(axios, "post").mockResolvedValue({ data: { success: true } });
+        // Fill login form
+        await userEvent.type(screen.getByLabelText("Email"), "test@email.com");
+        await userEvent.type(screen.getByLabelText("Password"), "validpassword");
+        
+        //Submit & check if API call made with correct data
+        await userEvent.click(screen.getByPlaceholderText("Log in"));
 
+        //Check if API was called with right params
+        expect(axios.post).toHaveBeenCalledWith("https://ordo-backend.fly.dev/auth/login",  {
+                email: "test@email.com",
+                password: "validpassword"
+        });
+    });
+    test("api call made with form inputs for signup", async() => {
+        vi.spyOn(axios, "post").mockResolvedValue({ data: { success:true } });
+
+        // Switch to signup component
+        await userEvent.click(screen.getByText("Sign up", {selector: "button"}));
+
+        // Fill signup form
+        await userEvent.type(screen.getByLabelText("Name"), "John");
+        await userEvent.type(screen.getByLabelText("Email"), "test@email.com");
+        await userEvent.type(screen.getByLabelText("Password"), "validpassword");
+        await userEvent.type(screen.getByLabelText("Repeat password"), "validpassword");
+
+        //Check if API was called with right params
+        expect(axios.post).toHaveBeenCalledWith("https://ordo-backend.fly.dev/auth/signup", {
+            name: "John",
+            email: "test@email.com",
+            password: "validpassword",
+            repeatPassword: "validpassword"
+        })
     })
 })
