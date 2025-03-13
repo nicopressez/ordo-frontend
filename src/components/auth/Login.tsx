@@ -1,11 +1,17 @@
 import axios from "axios"
 import { useState } from "react"
+import { useAppDispatch, useAppSelector } from "../../reducers/hooks"
+import { loginSuccess } from "../../reducers/auth"
 
 interface LoginProps {
     setSignupPage: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const Login = ( {setSignupPage} : LoginProps) => {
+
+    const auth = useAppSelector((state => state.auth));
+    const dispatch = useAppDispatch();
+    const { isLoggedIn } = auth
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -20,9 +26,8 @@ const Login = ( {setSignupPage} : LoginProps) => {
             email,
             password,
         }).then((res) => {
-            // Store user in redux
-            // Store token
-            // Redirect user to main page
+            
+            dispatch(loginSuccess(res.data.token))
             console.log(res)
         }).catch(() => {
             setError(true);

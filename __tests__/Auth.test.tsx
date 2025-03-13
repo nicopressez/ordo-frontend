@@ -5,6 +5,8 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event"
 import Auth from "../src/components/auth/Auth.tsx"
 import axios from "axios";
+import { Provider } from "react-redux";
+import { store } from "../src/reducers/store.ts";
 
 describe("Auth page tests", () => {
     beforeAll(() => {
@@ -12,7 +14,9 @@ describe("Auth page tests", () => {
     });
     beforeEach(() => {
         render(
+            <Provider store={store}>
             <Auth />
+            </Provider>
         );
     });
     afterEach(() => {
@@ -99,5 +103,16 @@ describe("Auth page tests", () => {
         //Check if error appears && API not called
         expect(axios.post).not.toHaveBeenCalled();
         expect(screen.getByText("Passwords don't match")).toBeInTheDocument();
+    });
+    test("token stored in browser after successful login", async() => {
+        vi.spyOn(axios, "post").mockResolvedValue({ data: { token: "test_token" } });
+
+        // Fill login form
+        await userEvent.type(screen.getByLabelText("Email"), "test@email.com");
+        await userEvent.type(screen.getByLabelText("Password"), "validpassword");
+        
+        //Submit & check if token was stored
+        await userEvent.click(screen.getByPlaceholderText("Log in"));
+        expect(localStorage.getItem("token")).toBe("test_token")
     })
 })
