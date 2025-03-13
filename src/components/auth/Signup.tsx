@@ -1,11 +1,17 @@
 import axios from "axios";
 import { useState } from "react"
+import { useAppDispatch, useAppSelector } from "../../reducers/hooks";
+import { loginSuccess } from "../../reducers/auth";
 
 interface SignupProps {
     setSignupPage: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const Signup = ({setSignupPage} : SignupProps) => {
+
+    const auth = useAppSelector((state => state.auth))
+    const dispatch = useAppDispatch();
+    const { isLoggedIn } = auth
 
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
@@ -37,7 +43,8 @@ const Signup = ({setSignupPage} : SignupProps) => {
             password,
             repeatPassword
         }).then((res) => {
-            console.log(res)
+            // Signed up, log user in, store token and user info
+            dispatch(loginSuccess(res.data.token));
         }).catch((err) => {
             if(err.response.data.errors[0].path === "email") {
                 setErrors(prevErrors => ({...prevErrors, emailInUse: true}));

@@ -1,17 +1,22 @@
 import React from "react";
 import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 import '@testing-library/jest-dom/vitest';
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, getByTestId, getByText, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event"
 import Auth from "../src/components/auth/Auth.tsx"
 import axios from "axios";
 import { Provider } from "react-redux";
 import { store } from "../src/reducers/store.ts";
 
+const mockedUseNavigate = vi.fn();
+
+vi.mock("axios");
+
+vi.mock("react-router-dom", () => ({
+    useNavigate: () => mockedUseNavigate
+}))
+
 describe("Auth page tests", () => {
-    beforeAll(() => {
-        vi.mock("axios")  
-    });
     beforeEach(() => {
         render(
             <Provider store={store}>
@@ -55,7 +60,9 @@ describe("Auth page tests", () => {
         });
     });
     test("api call made with form inputs for signup", async() => {
-        vi.spyOn(axios, "post").mockResolvedValue({ data: { success:true } });
+        vi.spyOn(axios, "post").mockResolvedValue({ data: { token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." +
+    "eyJ1c2VyIjp7Im5hbWUiOiJUZXN0IFVzZXIiLCJlbWFpbCI6InRlc3RAZW1haWwuY29tIn19." +
+    "dummysignature" } });
 
         // Switch to signup component
         await userEvent.click(screen.getByText("Sign up", {selector: "button"}));
@@ -114,5 +121,26 @@ describe("Auth page tests", () => {
         //Submit & check if token was stored
         await userEvent.click(screen.getByPlaceholderText("Log in"));
         expect(localStorage.getItem("token")).toBe("test_token")
+    });
+    test("redirect once logged in", async() => {
+        //Pass on fake token to resolved API call
+        vi.spyOn(axios, "post").mockResolvedValue({ data: { token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." +
+    "eyJ1c2VyIjp7Im5hbWUiOiJUZXN0IFVzZXIiLCJlbWFpbCI6InRlc3RAZW1haWwuY29tIn19." +
+    "dummysignature" } });
+
+        // Fill login form
+        await userEvent.type(screen.getByLabelText("Email"), "test@email.com");
+        await userEvent.type(screen.getByLabelText("Password"), "validpassword");
+        
+        //Submit & check if token was stored
+        await userEvent.click(screen.getByPlaceholderText("Log in"));
+
+        // Check if auth state changed and redirection called
+        await waitFor(() => {
+            expect(store.getState().auth.isLoggedIn).toBe(true)
+        })
+        await waitFor(() => {
+            expect(mockedUseNavigate).toHaveBeenCalledWith("/home");
+        });
     })
 })

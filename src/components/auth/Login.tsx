@@ -1,7 +1,8 @@
 import axios from "axios"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useAppDispatch, useAppSelector } from "../../reducers/hooks"
 import { loginSuccess } from "../../reducers/auth"
+import { useNavigate } from "react-router-dom"
 
 interface LoginProps {
     setSignupPage: React.Dispatch<React.SetStateAction<boolean>>
@@ -12,10 +13,18 @@ const Login = ( {setSignupPage} : LoginProps) => {
     const auth = useAppSelector((state => state.auth));
     const dispatch = useAppDispatch();
     const { isLoggedIn } = auth
+    const navigate = useNavigate()
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState(false);
+
+    // Redirect to homepage once logged in
+    useEffect(() => {
+        if (isLoggedIn) {
+            navigate("/home")
+        }
+    },[isLoggedIn])
 
     const handleLogin = (e : React.MouseEvent<HTMLInputElement, MouseEvent>) => {
         e.preventDefault();
@@ -26,9 +35,8 @@ const Login = ( {setSignupPage} : LoginProps) => {
             email,
             password,
         }).then((res) => {
-            
+            // Logged in, store token and user info
             dispatch(loginSuccess(res.data.token))
-            console.log(res)
         }).catch(() => {
             setError(true);
         })

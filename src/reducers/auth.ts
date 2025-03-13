@@ -19,7 +19,9 @@ export interface User {
         }[];
     };
     tasks: { _id: string }[];
-
+    createdAt: string,
+    updatedAt: string,
+    _id: string,
 }
 
 interface userJwtPayload extends JwtPayload {
