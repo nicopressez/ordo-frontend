@@ -7,11 +7,14 @@ interface LoginProps {
 
 const Login = ( {setSignupPage} : LoginProps) => {
 
-    const [email, setEmail] = useState("")
-    const [password, setPassword] = useState("")
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState(false);
 
     const handleLogin = (e : React.MouseEvent<HTMLInputElement, MouseEvent>) => {
         e.preventDefault();
+
+        if(password.length >= 8 && email.length >= 8){
 
         axios.post("https://ordo-backend.fly.dev/auth/login", {
             email,
@@ -21,16 +24,21 @@ const Login = ( {setSignupPage} : LoginProps) => {
             // Store token
             // Redirect user to main page
             console.log(res)
-        }).catch((err) => {
-            // Add error handling
-            console.log(err)
+        }).catch(() => {
+            setError(true);
         })
+        } else {
+        setError(true);
+        }
     }
 
     return(
         <div>
             <h1>Log in</h1>
             <form>
+                {error && 
+                <p>Invalid email or password. Please try again.</p>
+                }
                 <label htmlFor="email">
                     Email
                     <input type="email"

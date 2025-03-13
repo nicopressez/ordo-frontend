@@ -61,6 +61,7 @@ describe("Auth page tests", () => {
         await userEvent.type(screen.getByLabelText("Email"), "test@email.com");
         await userEvent.type(screen.getByLabelText("Password"), "validpassword");
         await userEvent.type(screen.getByLabelText("Repeat password"), "validpassword");
+        await userEvent.click(screen.getByPlaceholderText("Sign up"))
 
         //Check if API was called with right params
         expect(axios.post).toHaveBeenCalledWith("https://ordo-backend.fly.dev/auth/signup", {
@@ -69,5 +70,34 @@ describe("Auth page tests", () => {
             password: "validpassword",
             repeatPassword: "validpassword"
         })
+    });
+    test("error appears on screen when logging in with invalid form", async() => {
+        vi.spyOn(axios, "post").mockResolvedValue({ data: { success:true } });
+
+        // Fill login form
+        await userEvent.type(screen.getByLabelText("Email"), "inva");
+        await userEvent.type(screen.getByLabelText("Password"), "pass");
+        await userEvent.click(screen.getByPlaceholderText("Log in"));
+
+        //Check if error appears && API not called
+        expect(axios.post).not.toHaveBeenCalled();
+        expect(screen.getByText("Invalid email or password. Please try again.")).toBeInTheDocument();
+    });
+    test("error appears on screen when signing up with invalid form", async() => {
+        vi.spyOn(axios, "post").mockResolvedValue({ data: { success:true } });
+
+        // Switch to signup component
+        await userEvent.click(screen.getByText("Sign up", {selector: "button"}));
+
+        // Fill signup form
+        await userEvent.type(screen.getByLabelText("Name"), "John");
+        await userEvent.type(screen.getByLabelText("Email"), "test@email.com");
+        await userEvent.type(screen.getByLabelText("Password"), "validpassword");
+        await userEvent.type(screen.getByLabelText("Repeat password"), "invalidpassword");
+        await userEvent.click(screen.getByPlaceholderText("Sign up"));
+
+        //Check if error appears && API not called
+        expect(axios.post).not.toHaveBeenCalled();
+        expect(screen.getByText("Passwords don't match")).toBeInTheDocument();
     })
 })

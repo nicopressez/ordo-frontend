@@ -10,10 +10,24 @@ const Signup = ({setSignupPage} : SignupProps) => {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [repeatPassword, setRepeatPassword] = useState("")
+    const [repeatPassword, setRepeatPassword] = useState("");
+    const [errors, setErrors] = useState({
+        name: false,
+        email: false,
+        password: false,
+        repeatPassword: false,
+    })
 
     const handleSignup = (e: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
         e.preventDefault();
+        setErrors({name: false, email:false, password: false,  repeatPassword:false});
+
+        //Form checks before sending API request
+        if(name.length < 3 || name.length > 15) return setErrors(prevErrors => ({...prevErrors, name:true}));
+        if(email.length < 5) return setErrors(prevErrors => ({...prevErrors, email:true}));
+        if(password.length < 8) return setErrors(prevErrors => ({...prevErrors, password:true}));
+        if (password !== repeatPassword) return setErrors(prevErrors => ({...prevErrors, repeatPassword:true}));
+
 
         axios.post("https://ordo-backend.fly.dev/auth/signup", {
             name,
@@ -30,6 +44,8 @@ const Signup = ({setSignupPage} : SignupProps) => {
     return(
         <div>
             <form>
+                {errors.name && 
+                <p>Name must be between 3 and 15 characters long</p>}
                 <label htmlFor="name">
                     Name
                     <input type="text"
@@ -38,6 +54,8 @@ const Signup = ({setSignupPage} : SignupProps) => {
                            value={name}
                            onChange={(e) => setName(e.target.value)} />
                 </label>
+                {errors.email && 
+                <p>Email must be at least 5 characters long</p>}
                 <label htmlFor="email">
                     Email
                     <input type="email"
@@ -46,6 +64,8 @@ const Signup = ({setSignupPage} : SignupProps) => {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)} />
                 </label>
+                {errors.password && 
+                <p>Password must be at least 8 characters long</p>}
                 <label htmlFor="password">
                     Password
                     <input type="password" 
@@ -54,6 +74,8 @@ const Signup = ({setSignupPage} : SignupProps) => {
                            value={password}
                            onChange={(e) => setPassword(e.target.value)} />
                 </label>
+                {errors.repeatPassword && 
+                <p>Passwords don't match</p>}
                 <label htmlFor="repeatPassword">
                     Repeat password
                     <input type="password"
