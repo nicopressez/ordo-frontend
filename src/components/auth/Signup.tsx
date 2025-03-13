@@ -16,11 +16,13 @@ const Signup = ({setSignupPage} : SignupProps) => {
         email: false,
         password: false,
         repeatPassword: false,
+        emailInUse: false,
+        unknownError: false,
     })
 
     const handleSignup = (e: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
         e.preventDefault();
-        setErrors({name: false, email:false, password: false,  repeatPassword:false});
+        setErrors({name: false, email:false, password: false,  repeatPassword:false, emailInUse:false, unknownError:false});
 
         //Form checks before sending API request
         if(name.length < 3 || name.length > 15) return setErrors(prevErrors => ({...prevErrors, name:true}));
@@ -37,13 +39,19 @@ const Signup = ({setSignupPage} : SignupProps) => {
         }).then((res) => {
             console.log(res)
         }).catch((err) => {
-            console.log(err)
+            if(err.response.data.errors[0].path === "email") {
+                setErrors(prevErrors => ({...prevErrors, emailInUse: true}));
+            } else {
+                setErrors(prevErrors => ({...prevErrors, unknownError:true}));
+            }
         })
     }
 
     return(
         <div>
             <form>
+                {errors.unknownError && 
+                <p>An error occured, please try again</p>}
                 {errors.name && 
                 <p>Name must be between 3 and 15 characters long</p>}
                 <label htmlFor="name">
@@ -54,6 +62,8 @@ const Signup = ({setSignupPage} : SignupProps) => {
                            value={name}
                            onChange={(e) => setName(e.target.value)} />
                 </label>
+                {errors.emailInUse && 
+                <p>Email already in use, please log in or try a different address</p>}
                 {errors.email && 
                 <p>Email must be at least 5 characters long</p>}
                 <label htmlFor="email">
