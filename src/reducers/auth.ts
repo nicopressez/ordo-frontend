@@ -47,12 +47,18 @@ export const authSlice = createSlice({
             state.user = jwtDecode<userJwtPayload>(action.payload).user
             console.log(jwtDecode<userJwtPayload>(action.payload).user)
             state.isLoggedIn = true
+        },
+        logout(state) {
+            localStorage.removeItem("token");
+            state.isLoggedIn = false;
+            state.user = null;
         }
     }
 })
 
 export const {
-    loginSuccess
+    loginSuccess,
+    logout
 } = authSlice.actions 
 
 export default authSlice.reducer

@@ -45,6 +45,18 @@ const Login = ( {setSignupPage} : LoginProps) => {
         }
     }
 
+    const demoLogin = () => {
+        //Login with test user info
+        axios.post("https://ordo-backend.fly.dev/auth/login", {
+            email: "testuser@email.com",
+            password: "password"
+        }).then((res) => {
+            dispatch(loginSuccess(res.data.token))
+        }).catch(() => {
+            setError(true)
+        })
+    }
+
     return(
         <div>
             <h1>Log in</h1>
@@ -77,10 +89,12 @@ const Login = ( {setSignupPage} : LoginProps) => {
                        onClick={(e) => handleLogin(e)}>
                 </input>
             </form>
-            Don't have an account yet?
+            <p>Don't have an account yet?
             <button onClick={() => setSignupPage(true)}>
                 Sign up
-            </button>
+            </button></p>
+            <p>Want to try it out first? Check out the 
+                <button onClick={demoLogin}>Demo Version</button></p>
         </div>
     )
 }

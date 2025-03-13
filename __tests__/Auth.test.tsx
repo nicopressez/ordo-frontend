@@ -20,7 +20,7 @@ describe("Auth page tests", () => {
     beforeEach(() => {
         render(
             <Provider store={store}>
-            <Auth />
+                <Auth />
             </Provider>
         );
     });
@@ -142,5 +142,15 @@ describe("Auth page tests", () => {
         await waitFor(() => {
             expect(mockedUseNavigate).toHaveBeenCalledWith("/home");
         });
+    });
+    test("login as test user when clicking button", async() => {
+        vi.spyOn(axios, "post").mockResolvedValue({data :{success:true}});
+
+        await userEvent.click(screen.getByText("Demo Version"));
+
+        expect(axios.post).toHaveBeenCalledWith("https://ordo-backend.fly.dev/auth/login", {
+            email: "testuser@email.com",
+            password: "password"
+        })
     })
 })

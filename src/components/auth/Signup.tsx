@@ -1,7 +1,8 @@
 import axios from "axios";
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useAppDispatch, useAppSelector } from "../../reducers/hooks";
 import { loginSuccess } from "../../reducers/auth";
+import { useNavigate } from "react-router-dom";
 
 interface SignupProps {
     setSignupPage: React.Dispatch<React.SetStateAction<boolean>>
@@ -9,6 +10,7 @@ interface SignupProps {
 
 const Signup = ({setSignupPage} : SignupProps) => {
 
+    const navigate = useNavigate();
     const auth = useAppSelector((state => state.auth))
     const dispatch = useAppDispatch();
     const { isLoggedIn } = auth
@@ -25,6 +27,12 @@ const Signup = ({setSignupPage} : SignupProps) => {
         emailInUse: false,
         unknownError: false,
     })
+
+     useEffect(() => {
+            if (isLoggedIn) {
+                navigate("/home")
+            }
+        },[isLoggedIn])
 
     const handleSignup = (e: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
         e.preventDefault();
