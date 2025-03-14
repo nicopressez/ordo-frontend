@@ -33,17 +33,26 @@ const Signup = ({setSignupPage} : SignupProps) => {
             if (isLoggedIn) {
                 navigate("/home")
             }
-        },[isLoggedIn])
+        },[isLoggedIn]);
+
+        // Add form error to state when detected
+        const handleErrors = (field : keyof typeof errors) => {
+            setTimeout(() => {
+                setIsLoading(false);
+                setErrors( prevErrors => ({...prevErrors, [field]:true}))
+            }, 1000);
+        }
 
     const handleSignup = (e: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
         e.preventDefault();
+        setIsLoading(true);
         setErrors({name: false, email:false, password: false,  repeatPassword:false, emailInUse:false, unknownError:false});
 
         //Form checks before sending API request
-        if(name.length < 3 || name.length > 15) return setErrors(prevErrors => ({...prevErrors, name:true}));
-        if(email.length < 5) return setErrors(prevErrors => ({...prevErrors, email:true}));
-        if(password.length < 8) return setErrors(prevErrors => ({...prevErrors, password:true}));
-        if (password !== repeatPassword) return setErrors(prevErrors => ({...prevErrors, repeatPassword:true}));
+        if(name.length < 3 || name.length > 15) return handleErrors("name");
+        if(email.length < 5) return handleErrors("email");
+        if(password.length < 8) return handleErrors("password");
+        if (password !== repeatPassword) return handleErrors("repeatPassword")
 
 
         axios.post("https://ordo-backend.fly.dev/auth/signup", {
@@ -53,12 +62,19 @@ const Signup = ({setSignupPage} : SignupProps) => {
             repeatPassword
         }).then((res) => {
             // Signed up, log user in, store token and user info
-            dispatch(loginSuccess(res.data.token));
+            setTimeout(() => {
+                setIsLoading(false);
+                dispatch(loginSuccess(res.data.token));
+            }, 500)
         }).catch((err) => {
             if(err.response.data.errors[0].path === "email") {
-                setErrors(prevErrors => ({...prevErrors, emailInUse: true}));
+                setTimeout(() => {
+                    handleErrors("emailInUse")
+                }, 500);
             } else {
-                setErrors(prevErrors => ({...prevErrors, unknownError:true}));
+                setTimeout(() => {
+                    handleErrors("unknownError")
+                }, 1500)
             }
         })
     }
@@ -74,79 +90,89 @@ const Signup = ({setSignupPage} : SignupProps) => {
                 <p className=" text-red-500 float-right">
                     An error occured, please try again
                 </p>}
+                <div>
+                <label htmlFor="name"  className="text-gray-400">
+                    Name
+                </label>
                 {errors.name && 
                 <p className=" text-red-500 float-right">
                     Name must be between 3 and 15 characters long
                 </p>}
-                <label htmlFor="name"  className="text-gray-400">
-                    Name
-                </label>
+                </div>
                     <input type="text"
                            id="name"
                            name="name"
                            value={name}
                            onChange={(e) => setName(e.target.value)} 
                            className={`border-gray-200 border-2 rounded-lg mb-5 p-2
-                            ${isLoading && 'brightness-95'}`}/>
-                {errors.emailInUse && 
-                <p className=" text-red-500 float-right">
-                    Email already in use, please log in or try a different address
-                </p>}
+                            ${isLoading && 'brightness-75 cursor-default'}`}/>
+
+                <div>
+                <label htmlFor="email"  className="text-gray-400">
+                    Email
+                </label>
                 {errors.email && 
                 <p className=" text-red-500 float-right">
                     Email must be at least 5 characters long
                 </p>}
-                <label htmlFor="email"  className="text-gray-400">
-                    Email
-                </label>
+                {errors.emailInUse && 
+                <p className=" text-red-500 float-right">
+                    Email already in use, please log in or try a different address
+                </p>}
+                </div>
                     <input type="email"
                             id="email"
                             name="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className={`border-gray-200 border-2 rounded-lg mb-5 p-2
-                                ${isLoading && 'brightness-95'}`} />
+                                ${isLoading && 'brightness-75 cursor-default'}`} />
+                <div>
+                <label htmlFor="password"  className="text-gray-400">
+                    Password
+                </label>
                 {errors.password && 
                 <p className=" text-red-500 float-right">
                     Password must be at least 8 characters long
                 </p>}
-                <label htmlFor="password"  className="text-gray-400">
-                    Password
-                </label>
+                </div>
                     <input type="password" 
                            id="password"
                            name="password"
                            value={password}
                            onChange={(e) => setPassword(e.target.value)}
                            className={`border-gray-200 border-2 rounded-lg mb-5 p-2
-                            ${isLoading && 'brightness-95'}`} />
+                            ${isLoading && 'brightness-75 cursor-default'}`} />
+                <div>
+                <label htmlFor="repeatPassword"  className="text-gray-400 ">
+                    Repeat password
+                </label>
                 {errors.repeatPassword && 
                 <p className=" text-red-500 float-right">
                     Passwords don't match
                 </p>}
-                <label htmlFor="repeatPassword"  className="text-gray-400">
-                    Repeat password
-                </label>
+                </div>
                     <input type="password"
                            id="repeatPassword"
                            name="repeatPassword"
                            value={repeatPassword}
                            onChange={(e) => setRepeatPassword(e.target.value)}
                            className={`border-gray-200 border-2 rounded-lg mb-5 p-2
-                            ${isLoading && 'brightness-95'}`} />
+                            ${isLoading && 'brightness-75 cursor-default'}`} />
                 <input type="submit"
                        placeholder="Sign up"
                        value="Sign up"
                        onClick={(e) => handleSignup(e)}
                        className={`p-2 bg-indigo-400 rounded-2xl text-white
-                        font-semibold hover:cursor-pointer hover:brightness-105
-                        active:brightness-110
-                        ${isLoading && 'brightness-90'}`} />
+                        font-semibold
+                       ${isLoading ? 'brightness-95' : 
+                        "hover:cursor-pointer hover:brightness-105 active:brightness-110"}`} />
             </form>
             <p className=" text-gray-400 mt-5">
             Already have an account? 
                 <button onClick={() => setSignupPage(false)}
-                    className="text-indigo-400 ml-1 hover:brightness-90 hover:underline hover:cursor-pointer">
+                    className={`text-indigo-400 ml-1 
+                    ${isLoading ? "cursor-default" : "hover:brightness-90 hover:underline hover:cursor-pointer"}`}>
                 Log in
                 </button>
             </p>

@@ -92,7 +92,9 @@ describe("Auth page tests", () => {
 
         //Check if error appears && API not called
         expect(axios.post).not.toHaveBeenCalled();
-        expect(screen.getByText("Invalid email or password. Please try again.")).toBeInTheDocument();
+        waitFor(() => {
+            expect(screen.getByText("Invalid email or password. Please try again.")).toBeInTheDocument();
+        })
     });
     test("error appears on screen when signing up with invalid form", async() => {
         vi.spyOn(axios, "post").mockResolvedValue({ data: { success:true } });
@@ -109,10 +111,14 @@ describe("Auth page tests", () => {
 
         //Check if error appears && API not called
         expect(axios.post).not.toHaveBeenCalled();
-        expect(screen.getByText("Passwords don't match")).toBeInTheDocument();
+        waitFor(() => {
+            expect(screen.getByText("Passwords don't match")).toBeInTheDocument();
+        })
     });
     test("token stored in browser after successful login", async() => {
-        vi.spyOn(axios, "post").mockResolvedValue({ data: { token: "test_token" } });
+        vi.spyOn(axios, "post").mockResolvedValue({ data: { token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." +
+            "eyJ1c2VyIjp7Im5hbWUiOiJUZXN0IFVzZXIiLCJlbWFpbCI6InRlc3RAZW1haWwuY29tIn19." +
+            "dummysignature" } });
 
         // Fill login form
         await userEvent.type(screen.getByLabelText("Email"), "test@email.com");
@@ -120,7 +126,9 @@ describe("Auth page tests", () => {
         
         //Submit & check if token was stored
         await userEvent.click(screen.getByPlaceholderText("Log in"));
-        expect(localStorage.getItem("token")).toBe("test_token")
+        waitFor(() => {
+            expect(localStorage.getItem("token")).toBe("test_token")
+        })
     });
     test("redirect once logged in", async() => {
         //Pass on fake token to resolved API call

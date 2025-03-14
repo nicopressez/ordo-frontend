@@ -29,6 +29,8 @@ const Login = ( {setSignupPage} : LoginProps) => {
 
     const handleLogin = (e : React.MouseEvent<HTMLInputElement, MouseEvent>) => {
         e.preventDefault();
+        if(isLoading) return;
+        setIsLoading(true);
 
         if(password.length >= 8 && email.length >= 8){
 
@@ -37,24 +39,40 @@ const Login = ( {setSignupPage} : LoginProps) => {
             password,
         }).then((res) => {
             // Logged in, store token and user info
-            dispatch(loginSuccess(res.data.token))
+            setTimeout(() => {
+                setIsLoading(false);
+                dispatch(loginSuccess(res.data.token));
+            }, 500);
+            
         }).catch(() => {
-            setError(true);
+            setTimeout(() => {
+                setError(true);
+                setIsLoading(false);
+            }, 500);
         })
         } else {
-        setError(true);
+            setTimeout(() => {
+                setError(true);
+                setIsLoading(false);
+            }, 1500);
         }
     }
 
     const demoLogin = () => {
+        if(isLoading) return;
+        setIsLoading(true);
         //Login with test user info
         axios.post("https://ordo-backend.fly.dev/auth/login", {
             email: "testuser@email.com",
             password: "password"
         }).then((res) => {
-            dispatch(loginSuccess(res.data.token))
+            setTimeout(() => {
+                dispatch(loginSuccess(res.data.token))
+            }, 500);
         }).catch(() => {
-            setError(true)
+            setTimeout(() => {
+                setError(true)
+            }, 500);
         })
     }
 
@@ -65,21 +83,26 @@ const Login = ( {setSignupPage} : LoginProps) => {
                 Log in
             </h1>
             <form className="flex flex-col">
-                {error && 
-                <p className="text-red-500 text-center md:text-left mb-1 mt-1">
-                    Invalid email or password. Please try again.
-                    </p>
-                }
+                <div>
                 <label htmlFor="email" className="text-gray-400">
                     Email
                 </label>
+                {error && 
+                <p className="text-red-500 float-right">
+                    Invalid email or password. Please try again.
+                    </p>
+                }
+                </div>
                     <input type="email"
                             id="email"
                             name="email"
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            onChange={(e) => {
+                                if(isLoading) return;
+                                setEmail(e.target.value);
+                            }}
                             className={`border-gray-200 border-2 rounded-lg mb-5 p-2
-                                        ${isLoading && 'brightness-95'}`}>
+                                        ${isLoading && 'brightness-75 cursor-default'}`}>
                             
                     </input>
                 <label htmlFor="password" className="text-gray-400">
@@ -89,31 +112,39 @@ const Login = ( {setSignupPage} : LoginProps) => {
                            id="password"
                            name="password"
                            value={password}
-                           onChange={(e) => setPassword(e.target.value)}
+                           onChange={(e) => {
+                            if(isLoading) return;
+                            setPassword(e.target.value);
+                        }}
                            className={`border-gray-200 border-2 rounded-lg mb-5 p-2
-                                        ${isLoading && 'brightness-95'}`}>
+                                        ${isLoading && 'brightness-75 cursor-default'}`}>
                     </input>
                 <input type="submit"
                        placeholder="Log in"
                        value="Log in"
                        onClick={(e) => handleLogin(e)}
                        className={`p-2 bg-indigo-400 rounded-2xl text-white
-                        font-semibold hover:cursor-pointer hover:brightness-105
-                        active:brightness-110
-                        ${isLoading && 'brightness-90'}`}>
+                        font-semibold 
+                        ${isLoading ? 'brightness-95' : 
+                        "hover:cursor-pointer hover:brightness-105 active:brightness-110"}`}>
                 </input>
             </form>
             <p className="mt-5 text-gray-400">
                 Don't have an account yet?
-                <button onClick={() => setSignupPage(true)}
-                    className="text-indigo-400 ml-1 hover:brightness-90 hover:underline hover:cursor-pointer">
+                <button onClick={() => {
+                    if(isLoading) return;
+                    setSignupPage(true);
+                }}
+                    className={`text-indigo-400 ml-1
+                        ${isLoading ? "cursor-default" : "hover:brightness-90 hover:underline hover:cursor-pointer"}`} >
                     Sign up
                 </button>
             </p>
             <p className=" text-gray-400">
                 Want to try it out first? Check out the 
                 <button onClick={demoLogin} 
-                className="text-indigo-400 ml-1 hover:brightness-90 hover:underline hover:cursor-pointer">
+                className={`text-indigo-400 ml-1
+                ${isLoading ? "cursor-default" : "hover:brightness-90 hover:underline hover:cursor-pointer"}`}>
                     Demo Version
                 </button>
             </p>
