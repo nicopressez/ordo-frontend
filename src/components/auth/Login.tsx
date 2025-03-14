@@ -18,6 +18,7 @@ const Login = ( {setSignupPage} : LoginProps) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState(false);
+    const [isLoading, setIsLoading] = useState(false)
 
     // Redirect to homepage once logged in
     useEffect(() => {
@@ -58,43 +59,64 @@ const Login = ( {setSignupPage} : LoginProps) => {
     }
 
     return(
-        <div>
-            <h1>Log in</h1>
-            <form>
+        <div className="p-5 md:pt-40 md:pb-20 md:pl-44 md:pr-48 md:h-full  bg-white font-rubik rounded-[1.5rem] md:rounded-r-none md:rounded-l-[2.5rem]
+        h-screen">
+            <h1 className=" font-bold text-2xl md:text-3xl mb-7 tracking-wide text-center md:text-left">
+                Log in
+            </h1>
+            <form className="flex flex-col">
                 {error && 
-                <p>Invalid email or password. Please try again.</p>
+                <p className="text-red-500 text-center md:text-left mb-1 mt-1">
+                    Invalid email or password. Please try again.
+                    </p>
                 }
-                <label htmlFor="email">
+                <label htmlFor="email" className="text-gray-400">
                     Email
+                </label>
                     <input type="email"
                             id="email"
                             name="email"
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}>
+                            onChange={(e) => setEmail(e.target.value)}
+                            className={`border-gray-200 border-2 rounded-lg mb-5 p-2
+                                        ${isLoading && 'brightness-95'}`}>
                             
                     </input>
-                </label>
-                <label htmlFor="password">
+                <label htmlFor="password" className="text-gray-400">
                     Password
+                </label>
                     <input type="password" 
                            id="password"
                            name="password"
                            value={password}
-                           onChange={(e) => setPassword(e.target.value)}>
+                           onChange={(e) => setPassword(e.target.value)}
+                           className={`border-gray-200 border-2 rounded-lg mb-5 p-2
+                                        ${isLoading && 'brightness-95'}`}>
                     </input>
-
-                </label>
                 <input type="submit"
                        placeholder="Log in"
-                       onClick={(e) => handleLogin(e)}>
+                       value="Log in"
+                       onClick={(e) => handleLogin(e)}
+                       className={`p-2 bg-indigo-400 rounded-2xl text-white
+                        font-semibold hover:cursor-pointer hover:brightness-105
+                        active:brightness-110
+                        ${isLoading && 'brightness-90'}`}>
                 </input>
             </form>
-            <p>Don't have an account yet?
-            <button onClick={() => setSignupPage(true)}>
-                Sign up
-            </button></p>
-            <p>Want to try it out first? Check out the 
-                <button onClick={demoLogin}>Demo Version</button></p>
+            <p className="mt-5 text-gray-400">
+                Don't have an account yet?
+                <button onClick={() => setSignupPage(true)}
+                    className="text-indigo-400 ml-1 hover:brightness-90 hover:underline hover:cursor-pointer">
+                    Sign up
+                </button>
+            </p>
+            <p className=" text-gray-400">
+                Want to try it out first? Check out the 
+                <button onClick={demoLogin} 
+                className="text-indigo-400 ml-1 hover:brightness-90 hover:underline hover:cursor-pointer">
+                    Demo Version
+                </button>
+            </p>
         </div>
     )
 }

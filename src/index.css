@@ -1,0 +1,16 @@
+
+@import "tailwindcss";
+
+@font-face {
+    font-family: 'Rubik';
+    src: url('./assets/fonts/Rubik-Regular.ttf');
+}
+
+@font-face {
+    font-family: 'RubikMed';
+    src: url('./assets/fonts/Rubik-Medium.ttf');
+}
+@theme {
+    --font-rubik: "Rubik", sans-serif;
+    --font-rubikMed: "RubikMed", sans-serif;
+}

@@ -29,7 +29,7 @@ describe("Auth page tests", () => {
         vi.clearAllMocks();
     });
     test("Auth page renders", () => {
-        expect(screen.getByText("Log in")).toBeInTheDocument();
+        expect(screen.getByText("Log in", {selector: "h1"})).toBeInTheDocument();
         expect(screen.getByLabelText("Email")).toBeInTheDocument();
     });
     test("switches between login and signup component on button click", async() => {
