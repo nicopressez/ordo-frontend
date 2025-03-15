@@ -40,7 +40,7 @@ const Signup = ({setSignupPage} : SignupProps) => {
             setTimeout(() => {
                 setIsLoading(false);
                 setErrors( prevErrors => ({...prevErrors, [field]:true}))
-            }, 1000);
+            }, 1500);
         }
 
     const handleSignup = (e: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
@@ -74,7 +74,7 @@ const Signup = ({setSignupPage} : SignupProps) => {
             } else {
                 setTimeout(() => {
                     handleErrors("unknownError")
-                }, 1500)
+                }, 500)
             }
         })
     }

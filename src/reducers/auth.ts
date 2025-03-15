@@ -45,7 +45,6 @@ export const authSlice = createSlice({
         loginSuccess(state, action) {
             localStorage.setItem("token", action.payload);
             state.user = jwtDecode<userJwtPayload>(action.payload).user
-            console.log(jwtDecode<userJwtPayload>(action.payload).user)
             state.isLoggedIn = true
         },
         logout(state) {
