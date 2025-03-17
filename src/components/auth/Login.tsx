@@ -67,11 +67,13 @@ const Login = ( {setSignupPage} : LoginProps) => {
             password: "password"
         }).then((res) => {
             setTimeout(() => {
-                dispatch(loginSuccess(res.data.token))
+                dispatch(loginSuccess(res.data.token));
+                setIsLoading(false)
             }, 500);
         }).catch(() => {
             setTimeout(() => {
                 setError(true)
+                setIsLoading(false)
             }, 500);
         })
     }

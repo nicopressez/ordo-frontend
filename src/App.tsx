@@ -1,6 +1,6 @@
 import axios from "axios"
 import { useEffect } from "react"
-import { Outlet, useNavigate } from "react-router-dom"
+import { Outlet, useLocation, useNavigate } from "react-router-dom"
 import { useAppDispatch } from "./reducers/hooks"
 import { logout } from "./reducers/auth";
 
@@ -8,6 +8,7 @@ function App() {
 
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Check on initial mount if user is logged in
   useEffect(() => {
@@ -26,6 +27,8 @@ function App() {
         dispatch(logout());
         navigate("/auth");
       })
+    } else {
+      if(location.pathname !== "/auth") navigate("/auth");
     }
   },[])
 

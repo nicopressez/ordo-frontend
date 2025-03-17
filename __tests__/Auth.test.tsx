@@ -1,5 +1,5 @@
 import React from "react";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterAll, afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import '@testing-library/jest-dom/vitest';
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event"
@@ -7,10 +7,12 @@ import Auth from "../src/components/auth/Auth.tsx"
 import axios from "axios";
 import { Provider } from "react-redux";
 import { store } from "../src/reducers/store.ts";
-
-const mockedUseNavigate = vi.fn();
+import { configMocks, mockAnimationsApi } from 'jsdom-testing-mocks';
 
 //Setup mocks
+const mockedUseNavigate = vi.fn();
+configMocks({afterAll, beforeEach, afterEach},)
+mockAnimationsApi();
 vi.mock("axios");
 vi.mock("jwt-decode", () => ({
     jwtDecode: vi.fn(() => ({ user: { name: "John", email: "test@email.com" } }))

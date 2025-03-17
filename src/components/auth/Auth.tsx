@@ -2,6 +2,7 @@ import { useState } from "react"
 import Signup from "./Signup"
 import Login from "./Login"
 import logo from '../../assets/logo.svg';
+import { Transition } from '@headlessui/react'
 
 const Auth = () => {
 
@@ -9,6 +10,10 @@ const Auth = () => {
     return(
         <div className=" p-3 md:p-0 bg-indigo-300 w-screen h-full md:fixed">
             <div className="md:fixed p-2 md:p-0 md:top-36 md:left-12">
+                <Transition as="div" show={true} appear={true} 
+                 enter="transition-all duration-750"
+                 enterFrom="opacity-0"
+                 enterTo="opacity-100">
                 <h1
                     className="bg-white md:w-46 text-3xl md:text-5xl text-gray-800 pl-5
           pt-2 pb-2 rounded-md font-rubikMed"
@@ -20,6 +25,11 @@ const Auth = () => {
                     ></img>
                     Ordo
                 </h1>
+                </Transition>
+                <Transition as="div" show={true} appear={true} 
+                 enter="transition-all duration-1250"
+                 enterFrom="opacity-0"
+                 enterTo="opacity-100">
                 <div className="mb-3 font-rubikMed text-2xl md:text-3xl mt-4">
                     <p>
                         Seamlessly organize your tasks,<br />
@@ -28,20 +38,36 @@ const Auth = () => {
                         with AI-driven planning. <br />
                     </p>
                 </div>
+                </Transition>
+                <Transition as="div" show={true} appear={true} 
+                 enter="transition-all duration-1750"
+                 enterFrom="opacity-0"
+                 enterTo="opacity-100">
                 <div className="font-rubik mt-2 hidden md:inline md:mt-3 md:text-lg">
                     <p>
                         Effortlessly balance work, life, and priorities with intelligent <br />
                         scheduling that adapts to you. Track progress, manage tasks, <br />
                         and make the most of every day - your time, optimized.
                     </p>
+                    
                 </div>
+                </Transition>
             </div>
-            <div className=" md:pl-[44%] md:h-full">
-                {signupPage ? 
+            <div className=" md:pl-[44%] md:h-full ">
+                <Transition show={signupPage} as="div"
+                className="h-full"
+                enter="transition-all duration-500"
+                enterFrom="translate-x-40 opacity-0"
+                enterTo="translate-x-0 opacity-100">
                     <Signup setSignupPage={setSignupPage}/>
-                 : 
+                </Transition>
+                <Transition show={signupPage === false} as="div"
+                className="h-full"
+                enter="transition-all duration-500"
+                enterFrom="translate-x-40 opacity-0"
+                enterTo="translate-x-0 opacity-100">
                     <Login setSignupPage={setSignupPage}/>
-                }
+                </Transition>
             </div>
         </div>
         
