@@ -5,17 +5,17 @@ export interface User {
     name: string;
     email: string;
     password: string;
-    schedules?: [{ _id: string}];
+    schedules?: { _id: string}[];
     preferences?: {
         sleep: {
-            start: string;
-            end: string;
+            start: number;
+            end: number;
         },
         fixedTasks: {
             name: string;
-            day:  "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";
-            start: string;
-            end: string;
+            day:  number;
+            start: number;
+            end: number;
         }[];
     };
     tasks: { _id: string }[];
