@@ -8,18 +8,18 @@ const Auth = () => {
 
     const [signupPage, setSignupPage] = useState(false)
     return(
-        <div className=" p-3 md:p-0 bg-indigo-300 w-screen h-full md:fixed">
-            <div className="md:fixed p-2 md:p-0 md:top-36 md:left-12">
+        <div className=" p-3 lg:p-0 bg-indigo-300 w-screen min-h-screen lg:fixed">
+            <div className="lg:fixed p-2 lg:p-0 lg:top-36 lg:left-12">
                 <Transition as="div" show={true} appear={true} 
                  enter="transition-all duration-750"
                  enterFrom="opacity-0"
                  enterTo="opacity-100">
                 <h1
-                    className="bg-white md:w-46 text-3xl md:text-5xl text-gray-800 pl-5
+                    className="bg-white lg:w-46 text-3xl md:text-4xl lg:text-5xl text-gray-800 pl-5
           pt-2 pb-2 rounded-md font-rubikMed"
                 >
                     <img
-                        className="inline md:h-8 mb-2 mr-1"
+                        className="inline lg:h-8 mb-2 mr-1"
                         src={logo}
                         alt="Logo"
                     ></img>
@@ -30,7 +30,7 @@ const Auth = () => {
                  enter="transition-all duration-1250"
                  enterFrom="opacity-0"
                  enterTo="opacity-100">
-                <div className="mb-3 font-rubikMed text-2xl md:text-3xl mt-4">
+                <div className="mb-3 font-rubikMed text-xl md:text-2xl lg:text-3xl mt-4">
                     <p>
                         Seamlessly organize your tasks,<br />
                         optimize your schedule, <br />
@@ -43,7 +43,7 @@ const Auth = () => {
                  enter="transition-all duration-1750"
                  enterFrom="opacity-0"
                  enterTo="opacity-100">
-                <div className="font-rubik mt-2 hidden md:inline md:mt-3 md:text-lg">
+                <div className="font-rubik mt-2 hidden lg:inline lg:mt-3 lg:text-lg">
                     <p>
                         Effortlessly balance work, life, and priorities with intelligent <br />
                         scheduling that adapts to you. Track progress, manage tasks, <br />
@@ -53,7 +53,7 @@ const Auth = () => {
                 </div>
                 </Transition>
             </div>
-            <div className=" md:pl-[44%] md:h-full ">
+            <div className=" lg:pl-[44%] lg:h-full ">
                 <Transition show={signupPage} as="div"
                 className="h-full"
                 enter="transition-all duration-500"

@@ -80,8 +80,8 @@ const Signup = ({setSignupPage} : SignupProps) => {
     }
 
     return(
-        <div className="p-5 md:pt-32 md:pb-20 md:pl-44 md:pr-48 md:h-full  bg-white font-rubik rounded-[1.5rem] md:rounded-r-none md:rounded-l-[2.5rem]">
-            <h1 className=" font-bold text-2xl md:text-3xl mb-7 tracking-wide text-center md:text-left">
+        <div className="p-5 md:mt-3 md:p-7 md:ml-5 md:mr-5 lg:m-0 lg:pt-32 lg:pb-20 lg:pl-44 lg:pr-48 lg:h-screen  bg-white font-rubik rounded-[1.5rem] lg:rounded-r-none lg:rounded-l-[2.5rem]">
+            <h1 className=" font-bold text-2xl mb-3 lg:text-3xl lg:mb-7 tracking-wide text-center lg:text-left">
                     Create Account
             </h1>
             <form
