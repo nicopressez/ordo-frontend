@@ -2,6 +2,8 @@ import { NavLink, useNavigate } from "react-router-dom"
 import { useAppDispatch } from "../reducers/hooks"
 import { logout } from "../reducers/auth"
 import logo from "../assets/logo.svg"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faHome, faCog, faTasks, faCalendar, faArrowRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 
 const Navbar = () => {
     const dispatch = useAppDispatch()
@@ -31,6 +33,7 @@ const Navbar = () => {
                         className="text-gray-500 font-rubikMed pl-8 rounded-r-full pt-3 pb-3 w-[97%] block
                          hover:bg-gray-100 hover:cursor-pointer hover:text-indigo-500
                           aria-[current=page]:bg-indigo-700 aria-[current=page]:text-white ">
+                            <FontAwesomeIcon  icon={faHome} size="sm" className="inline mr-2"/>
                         Home
                         </NavLink>
                     </li>
@@ -39,6 +42,7 @@ const Navbar = () => {
                          className="text-gray-500 font-rubikMed pl-8 rounded-r-full pt-3 pb-3 w-[97%] block
                          hover:bg-gray-100 hover:cursor-pointer hover:text-indigo-500
                           aria-[current=page]:bg-indigo-700 aria-[current=page]:text-white ">
+                            <FontAwesomeIcon  icon={faCalendar} size="sm" className="inline mr-2"/>
                         Schedule
                         </NavLink>
                     </li>
@@ -47,6 +51,7 @@ const Navbar = () => {
                          className="text-gray-500 font-rubikMed pl-8 rounded-r-full pt-3 pb-3 w-[97%] block
                          hover:bg-gray-100 hover:cursor-pointer hover:text-indigo-500
                           aria-[current=page]:bg-indigo-700 aria-[current=page]:text-white ">
+                            <FontAwesomeIcon  icon={faTasks} size="sm" className="inline mr-2"/>
                         Tasks
                         </NavLink>
                     </li>
@@ -55,6 +60,7 @@ const Navbar = () => {
                          className="text-gray-500 font-rubikMed pl-8 rounded-r-full pt-3 pb-3 w-[97%] block
                          hover:bg-gray-100 hover:cursor-pointer hover:text-indigo-500
                           aria-[current=page]:bg-indigo-700 aria-[current=page]:text-white ">
+                            <FontAwesomeIcon  icon={faCog} size="sm" className="inline mr-2"/>
                         Preferences
                         </NavLink>
                     </li>
@@ -63,6 +69,7 @@ const Navbar = () => {
                 <button onClick={handleLogout}
                     className="text-red-600 font-rubikMed pl-8 text-left hover:cursor-pointer hover:bg-gray-100 w-full
                     pt-3 pb-3">
+                        <FontAwesomeIcon  icon={faArrowRightFromBracket} size="sm" className="inline mr-2"/>
                     Logout
                 </button>
             
