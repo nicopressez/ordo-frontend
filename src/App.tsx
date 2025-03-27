@@ -1,36 +1,46 @@
 import axios from "axios"
 import { useEffect } from "react"
 import { Outlet, useLocation, useNavigate } from "react-router-dom"
-import { useAppDispatch } from "./reducers/hooks"
-import { logout } from "./reducers/auth";
+import { useAppDispatch, useAppSelector } from "./reducers/hooks"
+import { logout, loginSuccess } from "./reducers/auth";
 
 function App() {
 
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const { isLoggedIn } = useAppSelector((state) => state.auth)
 
-  // Check on initial mount if user is logged in
   useEffect(() => {
-    // If token in storage, send request to check & refresh it
-    if(localStorage.getItem("token")) {
-      axios.post("https://ordo-backend.fly.dev/auth/token", {} , {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("token")}`
-        }
-      }).then((res) => {
-        // Append new refreshed token to storage
-        localStorage.setItem("token", res.data.token)
-      }).catch(() => {
-        // Token expired or invalid. Log user out and redirect to auth
-        dispatch(logout());
-        navigate("/auth");
-      })
+    // If token exists, try refreshing user info
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      // Check if the user is already logged in
+
+        axios.post("https://ordo-backend.fly.dev/auth/token", {}, {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          }
+        })
+          .then((res) => {
+            // Store new token and refresh user info
+            localStorage.setItem("token", res.data.token);
+            dispatch(loginSuccess(res.data.token));  
+          })
+          .catch(() => {
+            // Token is invalid or expired
+            dispatch(logout());
+            navigate("/auth");
+          });
+      
     } else {
-      if(location.pathname !== "/auth") navigate("/auth");
+      // If no token, navigate to the login page
+      if (location.pathname !== "/auth") navigate("/auth");
     }
-  },[])
+  }, [isLoggedIn, location.pathname]);
+
 
 
   

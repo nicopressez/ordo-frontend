@@ -6,7 +6,7 @@ export interface User {
     email: string;
     password: string;
     schedules?: { _id: string}[];
-    preferences?: {
+    preferences: {
         sleep: {
             start: number;
             end: number;
@@ -51,13 +51,17 @@ export const authSlice = createSlice({
             localStorage.removeItem("token");
             state.isLoggedIn = false;
             state.user = null;
+        },
+        refreshUserInfo(state, action) {
+            state.user = jwtDecode<userJwtPayload>(action.payload).user
         }
     }
 })
 
 export const {
     loginSuccess,
-    logout
+    logout,
+    refreshUserInfo
 } = authSlice.actions 
 
 export default authSlice.reducer
