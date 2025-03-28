@@ -82,10 +82,6 @@ describe("Preferences page tests", () => {
         expect(screen.getByText("End Time:")).toBeInTheDocument();
     });
     it("New task shows in the list after being created", async() => {
-        vi.spyOn(axios, "post").mockResolvedValue({ data: { token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." +
-            "eyJ1c2VyIjp7Im5hbWUiOiJUZXN0IFVzZXIiLCJlbWFpbCI6InRlc3RAZW1haWwuY29tIn19." +
-            "dummysignature" } });
-        
         await userEvent.click(screen.getByText("Add Fixed Task", {selector: "button"}));
 
         //Fill new task form with info & submit
@@ -98,6 +94,13 @@ describe("Preferences page tests", () => {
 
         //Check that the task was added to the preferences tab
         expect(screen.getByText("Task Name: ")).toBeInTheDocument();
+    })
+    it("Shows errors if incorrect form data for new task", async() => {
+        //Submit form with no task name or days selected
+        await userEvent.click(screen.getByText("Add Fixed Task", {selector: "button"}));
+        await userEvent.click(screen.getByDisplayValue("Save Task"));
 
+        expect(screen.getByText("Select at least one day")).toBeInTheDocument();
+        expect(screen.getByText("Task name must be specified")).toBeInTheDocument();
     })
 })
