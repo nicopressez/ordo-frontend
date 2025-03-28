@@ -3,7 +3,6 @@ import TimePicker from 'react-time-picker';
 import 'react-time-picker/dist/TimePicker.css';
 import 'react-clock/dist/Clock.css';
 import { useAppSelector } from "../../reducers/hooks";
-import { User } from "../../reducers/auth";
 
 
 const Preferences = () => {
@@ -19,39 +18,66 @@ const Preferences = () => {
         return `${hours}:${minutes}`
     }
 
+    //TODO : Format
+    //Get the day from the index - 1 > "Monday"
+    const formatIndexToDay = (day: number) => {
+        if(day === 0) return "Sunday";
+        if(day === 1) return "Monday";
+        if(day === 2 )return "Tuesday";
+        if(day === 3) return "Wednesday";
+        if(day === 4) return "Thursday";
+        if(day === 5) return "Friday";
+        if(day === 6) return "Saturday";
+    }
+
     const [sleepStart, setSleepStart] = useState("00:00");
     const [sleepEnd, setSleepEnd] = useState("00:00");
 
-    const [tasks, setTasks] = useState({});
+    const [tasks, setTasks] = useState<{name: string, day: number[], start:string, end:string}[]>([]);
     const [taskForm, setTaskForm] = useState(false);
     const [formErrors, setFormErrors] = useState({taskDate: false, name: false, time:false})
     const [taskData, setTaskData] = useState({
         name: "",
-        days: [] as number[],
+        day: [] as number[],
         start: "00:00",
         end: "00:00"
     });
+
     //Initialize form with user preferences
     useEffect(() => {
         if(user) {
             setSleepStart(formatMinutesToString(user.preferences.sleep.start));
             setSleepEnd(formatMinutesToString(user.preferences.sleep.end));
-            setTasks(user.preferences.fixedTasks);
+            const initialTasks = user.preferences.fixedTasks.map((task) => ({
+                name: task.name,
+                day: task.day,
+                start: formatMinutesToString(task.start),
+                end: formatMinutesToString(task.end)
+            })
+            )
+            setTasks(initialTasks);
         }
     },[user]);
 
     //Submit new task and add it to fixed tasks
     const handleNewTask = (e : React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        //Sanitize fields and add to errors
-        setFormErrors({
-                taskDate: !taskData.days[0], 
-                name: taskData.name.length < 1, 
-                time: taskData.start === taskData.end
-            });
-        if(Object.values(formErrors).some(value => value)) return;
-        setTasks(prevData => ({...prevData, taskData}));
-        console.log(tasks)
+        //Sanitize fields and set errors - return if any
+        const checkErrors = {
+            name: taskData.name.length < 1,
+            taskDate: !taskData.day.length,
+            time: taskData.start === taskData.end
+        };
+        setFormErrors(checkErrors);
+        if(Object.values(checkErrors).some(value => value)) return;
+        //Append new task to fixed tasks
+        //TODO: Return index days in order
+        setTasks(prevData => ([...prevData, {
+            name: taskData.name,
+            day: taskData.day,
+            start: taskData.start,
+            end: taskData.end
+        }]));
         //Reset & close form
         cancelNewTask();
     };
@@ -61,9 +87,9 @@ const Preferences = () => {
     const handleTaskDays = (e : React.ChangeEvent<HTMLInputElement>) => {
         const dayIndex = Number(e.target.name)
         setTaskData(prevData => 
-            ({...prevData, days: e.target.checked 
-                ? [...prevData.days, dayIndex]
-                : prevData.days.filter(d => d!== dayIndex)}))
+            ({...prevData, day: e.target.checked 
+                ? [...prevData.day, dayIndex]
+                : prevData.day.filter(d => d!== dayIndex)}))
     };
 
     //Reset task data and close new task form
@@ -72,7 +98,7 @@ const Preferences = () => {
         setTaskForm(false);
         setTaskData({
             name: "",
-        days: [] as number[],
+        day: [] as number[],
         start: "00:00",
         end: "00:00"
         });
@@ -103,6 +129,16 @@ const Preferences = () => {
                                 data-testid="sleep-end-time-picker"/>
                 </label>
                 <p>Fixed Tasks</p>
+                {tasks && 
+                    tasks.map((task) => (
+                        <div>
+                            <p>{task.name}</p>
+                            <p>{task.day.map(day => formatIndexToDay(day) + " ")}</p>
+                            <p>{task.start}</p>
+                            <p>{task.end}</p>
+                        </div>
+                    ))
+                }
                 <button onClick={(e) =>{ e.preventDefault(); setTaskForm(true)}}>
                     Add Fixed Task
                 </button>

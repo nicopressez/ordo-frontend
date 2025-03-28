@@ -24,7 +24,7 @@ const mockUser: User = {
         fixedTasks: [
             {
                 name: "Gym",
-                day: 1,
+                day: [1],
                 start: 18 * 60,
                 end: 19 * 60,
             },

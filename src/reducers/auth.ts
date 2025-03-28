@@ -13,7 +13,7 @@ export interface User {
         },
         fixedTasks: {
             name: string;
-            day:  number;
+            day:  number[];
             start: number;
             end: number;
         }[];
