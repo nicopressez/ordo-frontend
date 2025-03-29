@@ -93,7 +93,8 @@ describe("Preferences page tests", () => {
         await userEvent.click(screen.getByDisplayValue("Save Task"));
 
         //Check that the task was added to the preferences tab
-        expect(screen.getByText("Task Name: ")).toBeInTheDocument();
+        expect(screen.getByText("Great Name")).toBeInTheDocument();
+        expect(screen.getByText("Mon, Tue")).toBeInTheDocument();
     })
     it("Shows errors if incorrect form data for new task", async() => {
         //Submit form with no task name or days selected

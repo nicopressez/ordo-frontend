@@ -18,16 +18,22 @@ const Preferences = () => {
         return `${hours}:${minutes}`
     }
 
-    //TODO : Format
-    //Get the day from the index - 1 > "Monday"
-    const formatIndexToDay = (day: number) => {
-        if(day === 0) return "Sunday";
-        if(day === 1) return "Monday";
-        if(day === 2 )return "Tuesday";
-        if(day === 3) return "Wednesday";
-        if(day === 4) return "Thursday";
-        if(day === 5) return "Friday";
-        if(day === 6) return "Saturday";
+    //Return a sorted string of days from day indexes 
+    const formatIndexToDays = (days: number[]) => {
+        var daysString = "";
+        const daysInOrder = days.sort((a,b) => a - b );
+        //Add 3-letter day to string with comma if not first of the list
+        const appendDayToString = (d : String) => daysString+= daysString.length > 0 ? `, ${d}` : `${d}`;
+        daysInOrder.map(day => {
+            if(day === 0) appendDayToString("Sun");
+            if(day === 1) appendDayToString("Mon");
+            if(day === 2) appendDayToString("Tue");
+            if(day === 3) appendDayToString("Wed");
+            if(day === 4) appendDayToString("Thu");
+            if(day === 5) appendDayToString("Fri");
+            if(day === 6) appendDayToString("Sat")
+        });
+        return daysString;
     }
 
     const [sleepStart, setSleepStart] = useState("00:00");
@@ -40,7 +46,7 @@ const Preferences = () => {
         name: "",
         day: [] as number[],
         start: "00:00",
-        end: "00:00"
+        end: "23:59"
     });
 
     //Initialize form with user preferences
@@ -71,7 +77,6 @@ const Preferences = () => {
         setFormErrors(checkErrors);
         if(Object.values(checkErrors).some(value => value)) return;
         //Append new task to fixed tasks
-        //TODO: Return index days in order
         setTasks(prevData => ([...prevData, {
             name: taskData.name,
             day: taskData.day,
@@ -100,7 +105,7 @@ const Preferences = () => {
             name: "",
         day: [] as number[],
         start: "00:00",
-        end: "00:00"
+        end: "23:59"
         });
     }
 
@@ -133,9 +138,8 @@ const Preferences = () => {
                     tasks.map((task) => (
                         <div>
                             <p>{task.name}</p>
-                            <p>{task.day.map(day => formatIndexToDay(day) + " ")}</p>
-                            <p>{task.start}</p>
-                            <p>{task.end}</p>
+                            <p>{formatIndexToDays(task.day)}</p>
+                            <p>({task.start} - {task.end})</p>
                         </div>
                     ))
                 }
