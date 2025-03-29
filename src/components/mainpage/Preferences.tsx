@@ -10,38 +10,12 @@ const Preferences = () => {
     const auth = useAppSelector((state => state.auth));
     const user = auth.user;
 
-    //Format in minutes from midnight to hours string - 1400 > "23:20"
-    const formatMinutesToString = (minutesFromMidnight : number) => {
-        const hours = Math.trunc(minutesFromMidnight / 60);
-        const minutes = minutesFromMidnight % 60 
-
-        return `${hours}:${minutes}`
-    }
-
-    //Return a sorted string of days from day indexes 
-    const formatIndexToDays = (days: number[]) => {
-        var daysString = "";
-        const daysInOrder = days.sort((a,b) => a - b );
-        //Add 3-letter day to string with comma if not first of the list
-        const appendDayToString = (d : String) => daysString+= daysString.length > 0 ? `, ${d}` : `${d}`;
-        daysInOrder.map(day => {
-            if(day === 0) appendDayToString("Sun");
-            if(day === 1) appendDayToString("Mon");
-            if(day === 2) appendDayToString("Tue");
-            if(day === 3) appendDayToString("Wed");
-            if(day === 4) appendDayToString("Thu");
-            if(day === 5) appendDayToString("Fri");
-            if(day === 6) appendDayToString("Sat")
-        });
-        return daysString;
-    }
-
     const [sleepStart, setSleepStart] = useState("00:00");
     const [sleepEnd, setSleepEnd] = useState("00:00");
 
     const [tasks, setTasks] = useState<{name: string, day: number[], start:string, end:string}[]>([]);
     const [taskForm, setTaskForm] = useState(false);
-    const [formErrors, setFormErrors] = useState({taskDate: false, name: false, time:false})
+    const [formErrors, setFormErrors] = useState({taskDate: false, name: false, time:false, sleep:false})
     const [taskData, setTaskData] = useState({
         name: "",
         day: [] as number[],
@@ -65,6 +39,70 @@ const Preferences = () => {
         }
     },[user]);
 
+    //Check if a fixed task overlaps with sleep
+        const isTaskDuringSleep = (start : string, end: string) => {
+            var taskOverlaps = false;
+            //Get all hour string in minutes integer
+            const taskStartMin = stringToMinutes(start);
+            const taskEndMin = stringToMinutes(end);
+            const sleepStartMin = stringToMinutes(sleepStart);
+            const sleepEndMin = stringToMinutes(sleepEnd);
+
+            if(sleepEndMin < sleepStartMin) {
+                //Sleep spans midnight 
+                const lastMinuteOfDay = 1439;
+                taskOverlaps =  (taskStartMin >= sleepStartMin && taskStartMin <= lastMinuteOfDay) || // Task starts in night segment
+                       (taskEndMin > sleepStartMin && taskEndMin <= lastMinuteOfDay) || // Task ends in night segment
+                       (taskStartMin >= 0 && taskStartMin <= sleepEndMin) ||// Task starts in morning segment
+                       (taskEndMin >= 0 && taskEndMin <= sleepEndMin) || // Task ends in morning segment
+                       (taskStartMin < sleepStartMin && taskEndMin > sleepEndMin) // Task fully covers sleep
+                return taskOverlaps;
+            } else {
+                //Normal sleep (same day)
+            taskOverlaps = (taskStartMin >= sleepStartMin && taskStartMin < sleepEndMin) ||  //Task start between sleep
+            (taskEndMin > sleepStartMin && taskEndMin <= sleepEndMin) ||  //Task end between sleep
+            (taskStartMin < sleepStartMin && taskEndMin > sleepEndMin); // Task starts before sleep, ends after sleep
+            return taskOverlaps;
+            }
+        }
+        // Check if task start is between sleep start and sleep end
+        //If sleep end is smaller than sleep start, then anything between sleep start and 23:59 should also be excluded
+    
+
+        // Get time in string and format to minutes integer - "23:20" > 1400
+        const stringToMinutes = (time : string) => {
+            const hour = Number(time.split(":")[0])
+            const minutes = Number(time.split(":")[1])
+
+            return hour * 60 + minutes
+        }
+
+        //Format in minutes from midnight to hours string - 1400 > "23:20"
+        const formatMinutesToString = (minutesFromMidnight : number) => {
+            const hours = Math.trunc(minutesFromMidnight / 60);
+            const minutes = minutesFromMidnight % 60 
+    
+            return `${hours}:${minutes}`
+        }
+    
+        //Return a sorted string of days from day indexes 
+        const formatIndexToDays = (days: number[]) => {
+            var daysString = "";
+            const daysInOrder = days.sort((a,b) => a - b );
+            //Add 3-letter day to string with comma if not first of the list
+            const appendDayToString = (d : String) => daysString+= daysString.length > 0 ? `, ${d}` : `${d}`;
+            daysInOrder.map(day => {
+                if(day === 0) appendDayToString("Sun");
+                if(day === 1) appendDayToString("Mon");
+                if(day === 2) appendDayToString("Tue");
+                if(day === 3) appendDayToString("Wed");
+                if(day === 4) appendDayToString("Thu");
+                if(day === 5) appendDayToString("Fri");
+                if(day === 6) appendDayToString("Sat");
+            });
+            return daysString;
+        }
+
     //Submit new task and add it to fixed tasks
     const handleNewTask = (e : React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -72,7 +110,8 @@ const Preferences = () => {
         const checkErrors = {
             name: taskData.name.length < 1,
             taskDate: !taskData.day.length,
-            time: taskData.start === taskData.end
+            time: taskData.start === taskData.end,
+            sleep: isTaskDuringSleep(taskData.start, taskData.end)
         };
         setFormErrors(checkErrors);
         if(Object.values(checkErrors).some(value => value)) return;
@@ -84,7 +123,7 @@ const Preferences = () => {
             end: taskData.end
         }]));
         //Reset & close form
-        cancelNewTask();
+        clearNewTask();
     };
 
 
@@ -98,8 +137,8 @@ const Preferences = () => {
     };
 
     //Reset task data and close new task form
-    const cancelNewTask = () => {
-        setFormErrors({taskDate: false, name: false, time:false});
+    const clearNewTask = () => {
+        setFormErrors({taskDate: false, name: false, time:false, sleep:false});
         setTaskForm(false);
         setTaskData({
             name: "",
@@ -233,7 +272,7 @@ const Preferences = () => {
                                 disableClock
                                 data-testid="task-end-time-picker"/>
                     </label>
-                    <button onClick={cancelNewTask}>
+                    <button onClick={clearNewTask}>
                         Cancel
                     </button>
                     <input type="submit" 

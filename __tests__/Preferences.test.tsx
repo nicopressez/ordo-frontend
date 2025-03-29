@@ -95,7 +95,7 @@ describe("Preferences page tests", () => {
         //Check that the task was added to the preferences tab
         expect(screen.getByText("Great Name")).toBeInTheDocument();
         expect(screen.getByText("Mon, Tue")).toBeInTheDocument();
-    })
+    });
     it("Shows errors if incorrect form data for new task", async() => {
         //Submit form with no task name or days selected
         await userEvent.click(screen.getByText("Add Fixed Task", {selector: "button"}));
@@ -103,5 +103,43 @@ describe("Preferences page tests", () => {
 
         expect(screen.getByText("Select at least one day")).toBeInTheDocument();
         expect(screen.getByText("Task name must be specified")).toBeInTheDocument();
+    });
+    it("Calls the api to save preferences", async() => {
+        vi.spyOn(axios, "put").mockResolvedValue({ data: {} });
+        //Send API request with token and page info
+        //Add a fixed task 
+        await userEvent.click(screen.getByText("Add Fixed Task", {selector: "button"}));
+        await userEvent.type(screen.getByLabelText("Task Name:"), "Work");
+        await userEvent.click(screen.getByLabelText("Monday"));
+        await userEvent.click(screen.getByLabelText("Tuesday"));
+        await userEvent.type(screen.getByTestId("task-start-time-picker"), "0900");
+        await userEvent.type(screen.getByTestId("task-end-time-picker"), "1700");
+        await userEvent.click(screen.getByDisplayValue("Save Task"));
+
+        //Change sleep end time
+        await userEvent.type(screen.getByTestId("sleep-end-time-picker"), "0800");
+
+        await userEvent.click(screen.getByDisplayValue("Save Preferences"));
+        expect(axios.put).toHaveBeenCalledWith("https://ordo-backend.fly.dev/user/preferences", 
+            {
+                "sleepStart": 1400,
+                "sleepEnd": 8 * 60,
+                "fixedTasks": [
+                    {
+                    "name": "Gym",
+                    "day": [1],
+                    "start": 18 * 60,
+                    "end": 19 * 60,
+                    },
+                    {
+                    "name": "Work",
+                    "day": [1,2],
+                    "start": 9 * 60,
+                    "end": 17 * 60,
+                    }
+                ]
+            }
+        )
+
     })
 })
