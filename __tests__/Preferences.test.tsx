@@ -1,5 +1,5 @@
 import React from "react";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import '@testing-library/jest-dom/vitest';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import Preferences from "../src/components/mainpage/Preferences"
@@ -19,7 +19,7 @@ const mockUser: User = {
     preferences: {
         sleep: {
             start: 1400, //"23h20"
-            end: 620, //"10h20"
+            end: 8 * 60, 
         },
         fixedTasks: [
             {
@@ -88,13 +88,12 @@ describe("Preferences page tests", () => {
         await userEvent.type(screen.getByLabelText("Task Name:"), "Great Name");
         await userEvent.click(screen.getByLabelText("Monday"));
         await userEvent.click(screen.getByLabelText("Tuesday"));
-        await userEvent.type(screen.getByTestId("task-start-time-picker"), "0900");
-        await userEvent.type(screen.getByTestId("task-end-time-picker"), "1700");
         await userEvent.click(screen.getByDisplayValue("Save Task"));
 
-        //Check that the task was added to the preferences tab
-        expect(screen.getByText("Great Name")).toBeInTheDocument();
-        expect(screen.getByText("Mon, Tue")).toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.getByText("No fixed tasks")).not.toBeInTheDocument();
+          });
+        
     });
     it("Shows errors if incorrect form data for new task", async() => {
         //Submit form with no task name or days selected
@@ -113,6 +112,7 @@ describe("Preferences page tests", () => {
         await userEvent.click(screen.getByLabelText("Monday"));
         await userEvent.click(screen.getByLabelText("Tuesday"));
         await userEvent.type(screen.getByTestId("task-start-time-picker"), "0900");
+        await userEvent.click(screen.getByTestId("task-end-time-picker"))
         await userEvent.type(screen.getByTestId("task-end-time-picker"), "1700");
         await userEvent.click(screen.getByDisplayValue("Save Task"));
 

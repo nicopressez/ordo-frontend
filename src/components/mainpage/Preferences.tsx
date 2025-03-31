@@ -55,19 +55,17 @@ const Preferences = () => {
                        (taskEndMin > sleepStartMin && taskEndMin <= lastMinuteOfDay) || // Task ends in night segment
                        (taskStartMin >= 0 && taskStartMin <= sleepEndMin) ||// Task starts in morning segment
                        (taskEndMin >= 0 && taskEndMin <= sleepEndMin) || // Task ends in morning segment
-                       (taskStartMin < sleepStartMin && taskEndMin > sleepEndMin) // Task fully covers sleep
+                       (taskStartMin < sleepStartMin && taskEndMin > sleepEndMin && taskEndMin < taskStartMin) // Task fully covers sleep
+
                 return taskOverlaps;
             } else {
                 //Normal sleep (same day)
-            taskOverlaps = (taskStartMin >= sleepStartMin && taskStartMin < sleepEndMin) ||  //Task start between sleep
-            (taskEndMin > sleepStartMin && taskEndMin <= sleepEndMin) ||  //Task end between sleep
-            (taskStartMin < sleepStartMin && taskEndMin > sleepEndMin); // Task starts before sleep, ends after sleep
-            return taskOverlaps;
+                taskOverlaps = (taskStartMin >= sleepStartMin && taskStartMin < sleepEndMin) ||  //Task start between sleep
+                (taskEndMin > sleepStartMin && taskEndMin <= sleepEndMin) ||  //Task end between sleep
+                (taskStartMin < sleepStartMin && taskEndMin > sleepEndMin); // Task starts before sleep, ends after sleep
+                return taskOverlaps;
             }
         }
-        // Check if task start is between sleep start and sleep end
-        //If sleep end is smaller than sleep start, then anything between sleep start and 23:59 should also be excluded
-    
 
         // Get time in string and format to minutes integer - "23:20" > 1400
         const stringToMinutes = (time : string) => {
@@ -102,6 +100,11 @@ const Preferences = () => {
             });
             return daysString;
         }
+
+    const handleSubmitPreferences = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        
+    }
 
     //Submit new task and add it to fixed tasks
     const handleNewTask = (e : React.FormEvent<HTMLFormElement>) => {
@@ -156,7 +159,7 @@ const Preferences = () => {
     if (user) return (
         <div className=" bg-gray-100 h-screen w-screen ml-[20%]">
             <h1>Set Your Preferences</h1>
-            <form>
+            <form onSubmit={(e) => handleSubmitPreferences(e)}>
                 <label htmlFor="sleepStart" id="sleepStartLabel">
                     Sleep at:
                     <TimePicker onChange={(newValue) => setSleepStart(newValue || "00:00")}
@@ -173,14 +176,15 @@ const Preferences = () => {
                                 data-testid="sleep-end-time-picker"/>
                 </label>
                 <p>Fixed Tasks</p>
-                {tasks && 
+                {tasks[0] ?
                     tasks.map((task) => (
                         <div>
                             <p>{task.name}</p>
                             <p>{formatIndexToDays(task.day)}</p>
                             <p>({task.start} - {task.end})</p>
-                        </div>
-                    ))
+                        </div> 
+                    )) :
+                    (<p> No fixed tasks </p>)
                 }
                 <button onClick={(e) =>{ e.preventDefault(); setTaskForm(true)}}>
                     Add Fixed Task
@@ -256,11 +260,12 @@ const Preferences = () => {
                     </label>
                     {formErrors.time && 
                         <p>Must last at least one minute</p>}
+                    {formErrors.sleep && 
+                        <p>Fixed task must not overlap with sleep</p>}
                     <label htmlFor="start">
                         Start Time:
                         <TimePicker onChange={(newValue) => setTaskData(prevData => ({...prevData, start: newValue || "00:00"}))}
                                 value={taskData.start}
-                                maxTime={taskData.end}
                                 disableClock
                                 data-testid="task-start-time-picker"/>
                     </label>
@@ -268,7 +273,6 @@ const Preferences = () => {
                         End Time:
                         <TimePicker onChange={(newValue) => setTaskData(prevData => ({...prevData, end: newValue || "00:00"}))}
                                 value={taskData.end}
-                                minTime={taskData.start}
                                 disableClock
                                 data-testid="task-end-time-picker"/>
                     </label>
