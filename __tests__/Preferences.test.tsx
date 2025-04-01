@@ -130,5 +130,10 @@ describe("Preferences page tests", () => {
             }
         )
 
+    });
+    it("Updates a task", async() => {
+        await userEvent.click(screen.getByText("Delete", {selector: "button"}));
+
+        expect(screen.queryByText("Gym")).not.toBeInTheDocument();
     })
 })

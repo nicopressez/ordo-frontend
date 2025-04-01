@@ -17,8 +17,11 @@ const Preferences = () => {
     const [sleepStart, setSleepStart] = useState("00:00");
     const [sleepEnd, setSleepEnd] = useState("00:00");
 
+    const [editingTask, setEditingTask] = useState<any>();
+    const [editTaskForm, setEditTaskForm] = useState(false);
+
     const [tasks, setTasks] = useState<{name: string, day: number[], start:string, end:string}[]>([]);
-    const [taskForm, setTaskForm] = useState(false);
+    const [newTaskForm, setNewTaskForm] = useState(false);
     const [formErrors, setFormErrors] = useState({api: false,taskDate: false, name: false, time:false, sleep:false})
     const [taskData, setTaskData] = useState({
         name: "",
@@ -32,14 +35,12 @@ const Preferences = () => {
         if(user) {
             setSleepStart(formatMinutesToString(user.preferences.sleep.start));
             setSleepEnd(formatMinutesToString(user.preferences.sleep.end));
-            const initialTasks = user.preferences.fixedTasks.map((task) => ({
+            setTasks([...user.preferences.fixedTasks.map((task) => ({
                 name: task.name,
                 day: task.day,
                 start: formatMinutesToString(task.start),
                 end: formatMinutesToString(task.end)
-            })
-            )
-            setTasks(initialTasks);
+            }))]);
         }
     },[user]);
 
@@ -168,6 +169,49 @@ const Preferences = () => {
         clearNewTask();
     };
 
+    const handleEditingTask = (index: number) => {
+        setEditingTask(index);
+        setEditTaskForm(true)
+
+        //Get this task data and append it to form 
+        const data = {
+            name: tasks[index].name,
+            day: tasks[index].day,
+            start: tasks[index].start,
+            end: tasks[index].end
+        };
+        setTaskData(data);
+    }
+
+    //Edit current task
+    const handleEditTask = (e : React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        //Sanitize fields and set errors - return if any
+        const checkErrors = {
+            api: false,
+            name: taskData.name.length < 1,
+            taskDate: !taskData.day.length,
+            time: taskData.start === taskData.end,
+            sleep: isTaskDuringSleep(taskData.start, taskData.end)
+        };
+        setFormErrors(checkErrors);
+        if(Object.values(checkErrors).some(value => value)) return;
+        //Edit task in the tasks array
+        const newTasks = tasks;
+        newTasks.splice(editingTask, 1, taskData);
+        setTasks(newTasks);
+        //Reset & close form
+        setEditingTask(null);
+        clearNewTask();
+    };
+
+    const handleDeleteTask = (e: React.MouseEvent<HTMLButtonElement>,index:number) => {
+        e.preventDefault();
+        const newTasks = [...tasks];
+        newTasks.splice(index, 1);
+        setTasks(newTasks);
+    }
+
 
     //Add/remove index of day from new task data
     const handleTaskDays = (e : React.ChangeEvent<HTMLInputElement>) => {
@@ -181,7 +225,8 @@ const Preferences = () => {
     //Reset task data and close new task form
     const clearNewTask = () => {
         setFormErrors({api: false, taskDate: false, name: false, time:false, sleep:false});
-        setTaskForm(false);
+        setNewTaskForm(false);
+        setEditTaskForm(false);
         setTaskData({
             name: "",
         day: [] as number[],
@@ -191,23 +236,29 @@ const Preferences = () => {
     }
 
     if(!user) return (
+        // TODO: Loading page
         <h1> Loading</h1>
     )
       
 
     if (user) return (
-        <div className=" bg-gray-100 h-screen w-screen ml-[20%]">
-            <h1>Set Your Preferences</h1>
+        <div className=" bg-gray-100 h-screen w-screen ml-[14%] p-5 font-rubik">
+            <div className="bg-white rounded-xl p-5 w-[50%]">
+            <h1 className="font-bold text-2xl text-center mb-4 text-gray-900">
+                Set Your Preferences
+            </h1>
             {formErrors.api && (
                 <p>An error occured, please try again</p>
             )}
             <form onSubmit={(e) => handleSubmitPreferences(e)}>
+                <p>Sleep schedule</p>
                 <label htmlFor="sleepStart" id="sleepStartLabel">
                     Sleep at:
                     <TimePicker onChange={(newValue) => setSleepStart(newValue || "00:00")}
                                 value={sleepStart} id="sleepStart"
                                 aria-labelledby="sleepStartLabel"
-                                data-testid="sleep-start-time-picker"/>
+                                data-testid="sleep-start-time-picker"
+                                disableClock/>
                 </label>
                 <label htmlFor="sleepEnd" id="sleepEndLabel">
                     Wake up at:
@@ -215,27 +266,33 @@ const Preferences = () => {
                                 value={sleepEnd} 
                                 id="sleepEnd" 
                                 aria-labelledby="sleepEndLabel"
-                                data-testid="sleep-end-time-picker"/>
+                                data-testid="sleep-end-time-picker"
+                                disableClock/>
                 </label>
                 <p>Fixed Tasks</p>
                 {tasks[0] ?
-                    tasks.map((task) => (
-                        <div>
+                    tasks.map((task, index) => (
+                        <div >
                             <p>{task.name}</p>
                             <p>{formatIndexToDays(task.day)}</p>
                             <p>({task.start} - {task.end})</p>
+                            <button onClick={() => {handleEditingTask(index)}}>Edit</button>
+                            <button onClick={(e) => {handleDeleteTask(e, index)}}>Delete</button>
                         </div> 
                     )) :
                     (<p> No fixed tasks </p>)
                 }
-                <button onClick={(e) =>{ e.preventDefault(); setTaskForm(true)}}>
+                <button onClick={(e) =>{ e.preventDefault(); setNewTaskForm(true)}}>
                     Add Fixed Task
                 </button>
                 <input type="submit" value="Save Preferences"/>
             </form>
-            {taskForm && <div>
-                <h2>Create Fixed Task</h2>
-                <form onSubmit={(e) => handleNewTask(e)}>
+            </div>
+            {(newTaskForm || editTaskForm) && <div>
+                <h2>{newTaskForm 
+                    ? "Create Fixed Task"
+                    : "Edit Fixed Task"}</h2>
+                <form onSubmit={newTaskForm ? (e) => handleNewTask(e) : (e) => handleEditTask(e)}>
                     {formErrors.name &&
                         <p>Task name must be specified</p>}
                     <label htmlFor="name">
@@ -255,49 +312,56 @@ const Preferences = () => {
                             <input name="1"
                                    id="1"
                                    type="checkbox"
-                                   onChange={(e) => handleTaskDays(e)}/>
+                                   onChange={(e) => handleTaskDays(e)}
+                                   checked={taskData.day.includes(1)}/>
                         </label>
                         <label htmlFor="2">
                             Tuesday
                             <input name="2"
                                    id="2"
                                    type="checkbox"
-                                   onChange={(e) => handleTaskDays(e)}/>
+                                   onChange={(e) => handleTaskDays(e)}
+                                   checked={taskData.day.includes(2)}/>
                         </label>
                         <label htmlFor="3">
                             Wednesday
                             <input name="3"
                                    id="3"
                                    type="checkbox"
-                                   onChange={(e) => handleTaskDays(e)}/>
+                                   onChange={(e) => handleTaskDays(e)}
+                                   checked={taskData.day.includes(3)}/>
                         </label>
                         <label htmlFor="4">
                             Thursday
                             <input name="4"
                                    id="4"
                                    type="checkbox"
-                                   onChange={(e) => handleTaskDays(e)}/>
+                                   onChange={(e) => handleTaskDays(e)}
+                                   checked={taskData.day.includes(4)}/>
                         </label>
                         <label htmlFor="5">
                             Friday
                             <input name="5"
                                    id="5"
                                    type="checkbox"
-                                   onChange={(e) => handleTaskDays(e)}/>
+                                   onChange={(e) => handleTaskDays(e)}
+                                   checked={taskData.day.includes(5)}/>
                         </label>
                         <label htmlFor="6">
                             Saturday
                             <input name="6"
                                    id="6"
                                    type="checkbox"
-                                   onChange={(e) => handleTaskDays(e)}/>
+                                   onChange={(e) => handleTaskDays(e)}
+                                   checked={taskData.day.includes(6)}/>
                         </label>
                         <label htmlFor="0">
                             Sunday
                             <input name="0"
                                    id="0"
                                    type="checkbox"
-                                   onChange={(e) => handleTaskDays(e)}/>
+                                   onChange={(e) => handleTaskDays(e)}
+                                   checked={taskData.day.includes(0)}/>
                         </label>
                     </label>
                     {formErrors.time && 
