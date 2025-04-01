@@ -3,10 +3,14 @@ import TimePicker from 'react-time-picker';
 import 'react-time-picker/dist/TimePicker.css';
 import 'react-clock/dist/Clock.css';
 import { useAppSelector } from "../../reducers/hooks";
+import axios from "axios";
+import { loginSuccess } from "../../reducers/auth";
+import { useDispatch } from "react-redux";
 
 
 const Preferences = () => {
 
+    const dispatch = useDispatch();
     const auth = useAppSelector((state => state.auth));
     const user = auth.user;
 
@@ -15,7 +19,7 @@ const Preferences = () => {
 
     const [tasks, setTasks] = useState<{name: string, day: number[], start:string, end:string}[]>([]);
     const [taskForm, setTaskForm] = useState(false);
-    const [formErrors, setFormErrors] = useState({taskDate: false, name: false, time:false, sleep:false})
+    const [formErrors, setFormErrors] = useState({api: false,taskDate: false, name: false, time:false, sleep:false})
     const [taskData, setTaskData] = useState({
         name: "",
         day: [] as number[],
@@ -39,6 +43,44 @@ const Preferences = () => {
         }
     },[user]);
 
+
+    //Submit new preferences to API & update user
+    const handleSubmitPreferences = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setFormErrors({api: false, taskDate: false, name: false, time:false, sleep:false});
+        //Format hours for all tasks back to number and send API req
+        const fixedTasks = tasks.map((task) => ({
+            name: task.name, 
+            day:task.day,
+            start: stringToMinutes(task.start),
+            end: stringToMinutes(task.end)
+        }));
+
+        axios.put("https://ordo-backend.fly.dev/user/preferences", {
+            fixedTasks,
+            "sleepStart": stringToMinutes(sleepStart),
+            "sleepEnd": stringToMinutes(sleepEnd)
+        }, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("token")}`,
+              }
+        }).then((res) => {
+            //Update token 
+            localStorage.setItem("token", res.data.token);
+            dispatch(loginSuccess(res.data.token));  
+        }).catch(() => {
+            //Add API error
+            const checkErrors = {
+                api: true,
+                name: false,
+                taskDate: false,
+                time: false,
+                sleep: false,
+            };
+            setFormErrors(checkErrors);
+        })
+    }
     //Check if a fixed task overlaps with sleep
         const isTaskDuringSleep = (start : string, end: string) => {
             var taskOverlaps = false;
@@ -86,7 +128,8 @@ const Preferences = () => {
         //Return a sorted string of days from day indexes 
         const formatIndexToDays = (days: number[]) => {
             var daysString = "";
-            const daysInOrder = days.sort((a,b) => a - b );
+            const daysForSort = [...days]
+            const daysInOrder = daysForSort.sort((a,b) => { return a - b} );
             //Add 3-letter day to string with comma if not first of the list
             const appendDayToString = (d : String) => daysString+= daysString.length > 0 ? `, ${d}` : `${d}`;
             daysInOrder.map(day => {
@@ -101,16 +144,12 @@ const Preferences = () => {
             return daysString;
         }
 
-    const handleSubmitPreferences = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        
-    }
-
     //Submit new task and add it to fixed tasks
     const handleNewTask = (e : React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         //Sanitize fields and set errors - return if any
         const checkErrors = {
+            api: false,
             name: taskData.name.length < 1,
             taskDate: !taskData.day.length,
             time: taskData.start === taskData.end,
@@ -141,7 +180,7 @@ const Preferences = () => {
 
     //Reset task data and close new task form
     const clearNewTask = () => {
-        setFormErrors({taskDate: false, name: false, time:false, sleep:false});
+        setFormErrors({api: false, taskDate: false, name: false, time:false, sleep:false});
         setTaskForm(false);
         setTaskData({
             name: "",
@@ -159,6 +198,9 @@ const Preferences = () => {
     if (user) return (
         <div className=" bg-gray-100 h-screen w-screen ml-[20%]">
             <h1>Set Your Preferences</h1>
+            {formErrors.api && (
+                <p>An error occured, please try again</p>
+            )}
             <form onSubmit={(e) => handleSubmitPreferences(e)}>
                 <label htmlFor="sleepStart" id="sleepStartLabel">
                     Sleep at:
