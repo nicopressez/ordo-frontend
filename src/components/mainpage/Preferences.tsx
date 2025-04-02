@@ -6,6 +6,8 @@ import { useAppSelector } from "../../reducers/hooks";
 import axios from "axios";
 import { loginSuccess } from "../../reducers/auth";
 import { useDispatch } from "react-redux";
+import { faListCheck, faMoon, faPenToSquare, faPlus, faX } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 
 const Preferences = () => {
@@ -121,7 +123,7 @@ const Preferences = () => {
         //Format in minutes from midnight to hours string - 1400 > "23:20"
         const formatMinutesToString = (minutesFromMidnight : number) => {
             const hours = Math.trunc(minutesFromMidnight / 60);
-            const minutes = minutesFromMidnight % 60 
+            const minutes = minutesFromMidnight % 60 || "00"
     
             return `${hours}:${minutes}`
         }
@@ -205,7 +207,7 @@ const Preferences = () => {
         clearNewTask();
     };
 
-    const handleDeleteTask = (e: React.MouseEvent<HTMLButtonElement>,index:number) => {
+    const handleDeleteTask = (e: React.MouseEvent<SVGSVGElement, MouseEvent>,index:number) => {
         e.preventDefault();
         const newTasks = [...tasks];
         newTasks.splice(index, 1);
@@ -244,48 +246,71 @@ const Preferences = () => {
     if (user) return (
         <div className=" bg-gray-100 h-screen w-screen ml-[14%] p-5 font-rubik">
             <div className="bg-white rounded-xl p-5 w-[50%]">
-            <h1 className="font-bold text-2xl text-center mb-4 text-gray-900">
+            <h1 className="font-bold text-2xl text-center mb-6 text-gray-900">
                 Set Your Preferences
             </h1>
             {formErrors.api && (
                 <p>An error occured, please try again</p>
             )}
-            <form onSubmit={(e) => handleSubmitPreferences(e)}>
-                <p>Sleep schedule</p>
-                <label htmlFor="sleepStart" id="sleepStartLabel">
+            <form className="flex flex-col items-center" onSubmit={(e) => handleSubmitPreferences(e)}>
+                
+                <h2 className="text-xl font-bold mb-3">
+                    <FontAwesomeIcon icon={faMoon} className="text-indigo-500 mr-1" size="sm"/>
+                Sleep Schedule
+                </h2>
+                <label htmlFor="sleepStart" id="sleepStartLabel" 
+                className="border-[3px] p-1 pl-4 pr-4 border-gray-100 rounded-sm mb-2 w-96 flex justify-between">
                     Sleep at:
                     <TimePicker onChange={(newValue) => setSleepStart(newValue || "00:00")}
                                 value={sleepStart} id="sleepStart"
                                 aria-labelledby="sleepStartLabel"
                                 data-testid="sleep-start-time-picker"
-                                disableClock/>
+                                disableClock
+                                clearIcon
+                                className=" -mr-8"/>
                 </label>
-                <label htmlFor="sleepEnd" id="sleepEndLabel">
+                <label htmlFor="sleepEnd" id="sleepEndLabel"
+                className="border-[3px] p-1 pl-4 pr-4 border-gray-100 rounded-sm mb-2 w-96 flex justify-between">
                     Wake up at:
                     <TimePicker onChange={(newValue) => setSleepEnd(newValue || "00:00")}
                                 value={sleepEnd} 
                                 id="sleepEnd" 
                                 aria-labelledby="sleepEndLabel"
                                 data-testid="sleep-end-time-picker"
-                                disableClock/>
+                                disableClock
+                                clearIcon
+                                className="-mr-8"
+                                />
                 </label>
-                <p>Fixed Tasks</p>
+                <h2 className="text-xl font-bold mb-2 mt-3">
+                    <FontAwesomeIcon icon={faListCheck} className="text-indigo-500 mr-1" size="sm"/>
+                Fixed Tasks
+                </h2>
                 {tasks[0] ?
-                    tasks.map((task, index) => (
-                        <div >
-                            <p>{task.name}</p>
-                            <p>{formatIndexToDays(task.day)}</p>
-                            <p>({task.start} - {task.end})</p>
-                            <button onClick={() => {handleEditingTask(index)}}>Edit</button>
-                            <button onClick={(e) => {handleDeleteTask(e, index)}}>Delete</button>
+                <div className="border-[3px] p-1 pl-4 pr-4 border-gray-100 rounded-lg mb-2 w-[48rem]">
+                    {tasks.map((task, index) => (
+                        <div className={`border-gray-100 p-2 flex items-center flex-row justify-between ${index !== 0 && "border-t-2"}`}>
+                            <p className="w-32 font-bold">{task.name}</p>
+                            <p className="w-52 text-center">{formatIndexToDays(task.day)}</p>
+                            <p className="w-32">({task.start} - {task.end})</p>
+                            <div>
+                            <FontAwesomeIcon className="mt-1 text-indigo-500 mr-3 hover:cursor-pointer" 
+                            icon={faPenToSquare} onClick={() => {handleEditingTask(index)}} />
+                            <FontAwesomeIcon className="text-red-600 font-bold mt-1 hover:cursor-pointer" 
+                            icon={faX} onClick={(e) => {handleDeleteTask(e, index)}} />
+                            </div>
                         </div> 
-                    )) :
+                    ))}
+                </div> :
                     (<p> No fixed tasks </p>)
                 }
-                <button onClick={(e) =>{ e.preventDefault(); setNewTaskForm(true)}}>
+                <button onClick={(e) =>{ e.preventDefault(); setNewTaskForm(true)}}
+                    className="mt-3 hover:cursor-pointer font-bold hover:brightness-110">
+                    <FontAwesomeIcon icon={faPlus} className="text-indigo-500 mt-1 mr-1"/>
                     Add Fixed Task
                 </button>
-                <input type="submit" value="Save Preferences"/>
+                <input type="submit" value="Save Preferences" className="mt-3 w-52 p-2 bg-indigo-400 rounded-2xl text-white
+                        font-semibold hover:cursor-pointer hover:brightness-105 active:brightness-110" />
             </form>
             </div>
             {(newTaskForm || editTaskForm) && <div>

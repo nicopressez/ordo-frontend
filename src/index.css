@@ -14,3 +14,11 @@
     --font-rubik: "Rubik", sans-serif;
     --font-rubikMed: "RubikMed", sans-serif;
 }
+
+.react-time-picker {
+    border: none !important;
+    box-shadow: none !important;
+}
+.react-time-picker__wrapper {
+    border: none !important;
+}
