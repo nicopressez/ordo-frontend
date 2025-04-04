@@ -254,7 +254,7 @@ const Preferences = () => {
             )}
             <form className="flex flex-col items-center" onSubmit={(e) => handleSubmitPreferences(e)}>
                 
-                <h2 className="text-xl font-bold mb-3">
+                <h2 className="text-xl font-bold mb-5">
                     <FontAwesomeIcon icon={faMoon} className="text-indigo-500 mr-1" size="sm"/>
                 Sleep Schedule
                 </h2>
@@ -282,7 +282,7 @@ const Preferences = () => {
                                 className="-mr-8"
                                 />
                 </label>
-                <h2 className="text-xl font-bold mb-2 mt-3">
+                <h2 className="text-xl font-bold mb-5 mt-3">
                     <FontAwesomeIcon icon={faListCheck} className="text-indigo-500 mr-1" size="sm"/>
                 Fixed Tasks
                 </h2>
@@ -310,19 +310,23 @@ const Preferences = () => {
                     Add Fixed Task
                 </button>
                 <input type="submit" value="Save Preferences" className="mt-3 w-52 p-2 bg-indigo-400 rounded-2xl text-white
-                        font-semibold hover:cursor-pointer hover:brightness-105 active:brightness-110" />
+                        font-semibold hover:cursor-pointer hover:brightness-105 active:brightness-110 mb-3" />
             </form>
             </div>
-            {(newTaskForm || editTaskForm) && <div>
-                <h2>{newTaskForm 
+            {(newTaskForm || editTaskForm) && 
+            <div className="bg-white rounded-xl p-5 w-[32%] fixed right-0 top-5 font-rubik">
+                <h2 className="font-bold text-2xl text-center mb-6 text-gray-900"
+                >{newTaskForm 
                     ? "Create Fixed Task"
                     : "Edit Fixed Task"}</h2>
-                <form onSubmit={newTaskForm ? (e) => handleNewTask(e) : (e) => handleEditTask(e)}>
+                <form className="flex flex-col items-center" 
+                onSubmit={newTaskForm ? (e) => handleNewTask(e) : (e) => handleEditTask(e)}>
                     {formErrors.name &&
                         <p>Task name must be specified</p>}
-                    <label htmlFor="name">
+                    <label className="text-center text-lg mb-5" htmlFor="name">
                         Task Name:
-                        <input type="name"
+                        <input className="block border-[3px] rounded-sm p-1 pl-3 w-72 border-gray text-base"
+                               type="name"
                                name="name"
                                id="name"
                                onChange={(e) => setTaskData(prevData => ({...prevData, name: e.target.value}))}
@@ -330,88 +334,115 @@ const Preferences = () => {
                     </label>
                     {formErrors.taskDate && 
                         <p>Select at least one day</p>}
-                    <label>
-                        Days:
+                    <p className="text-center text-lg">
+                        Days:</p>
+                    <div className="mb-5 flex gap-2">
                         <label htmlFor="1">
-                            Monday
                             <input name="1"
                                    id="1"
                                    type="checkbox"
+                                   className="mr-1 accent-indigo-500 scale-110"
                                    onChange={(e) => handleTaskDays(e)}
                                    checked={taskData.day.includes(1)}/>
+                            Mon
                         </label>
                         <label htmlFor="2">
-                            Tuesday
                             <input name="2"
                                    id="2"
                                    type="checkbox"
+                                   className="mr-1 accent-indigo-500 scale-110"
                                    onChange={(e) => handleTaskDays(e)}
                                    checked={taskData.day.includes(2)}/>
+                            Tue
                         </label>
                         <label htmlFor="3">
-                            Wednesday
                             <input name="3"
                                    id="3"
                                    type="checkbox"
+                                   className="mr-1 accent-indigo-500 scale-110"
                                    onChange={(e) => handleTaskDays(e)}
                                    checked={taskData.day.includes(3)}/>
+                            Wed
                         </label>
                         <label htmlFor="4">
-                            Thursday
                             <input name="4"
                                    id="4"
                                    type="checkbox"
+                                   className="mr-1 accent-indigo-500 scale-110"
                                    onChange={(e) => handleTaskDays(e)}
                                    checked={taskData.day.includes(4)}/>
+                            Thu
                         </label>
                         <label htmlFor="5">
-                            Friday
                             <input name="5"
                                    id="5"
                                    type="checkbox"
+                                   className="mr-1 accent-indigo-500 scale-110"
                                    onChange={(e) => handleTaskDays(e)}
                                    checked={taskData.day.includes(5)}/>
+                            Fri
                         </label>
                         <label htmlFor="6">
-                            Saturday
                             <input name="6"
                                    id="6"
                                    type="checkbox"
+                                   className="mr-1 accent-indigo-500 scale-110"
                                    onChange={(e) => handleTaskDays(e)}
                                    checked={taskData.day.includes(6)}/>
+                            Sat
                         </label>
                         <label htmlFor="0">
-                            Sunday
                             <input name="0"
                                    id="0"
                                    type="checkbox"
+                                   className="mr-1 accent-indigo-500 scale-110"
                                    onChange={(e) => handleTaskDays(e)}
                                    checked={taskData.day.includes(0)}/>
+                            Sun
                         </label>
-                    </label>
+                    </div>
+                    
                     {formErrors.time && 
                         <p>Must last at least one minute</p>}
                     {formErrors.sleep && 
                         <p>Fixed task must not overlap with sleep</p>}
-                    <label htmlFor="start">
-                        Start Time:
-                        <TimePicker onChange={(newValue) => setTaskData(prevData => ({...prevData, start: newValue || "00:00"}))}
-                                value={taskData.start}
-                                disableClock
-                                data-testid="task-start-time-picker"/>
-                    </label>
-                    <label htmlFor="end">
-                        End Time:
-                        <TimePicker onChange={(newValue) => setTaskData(prevData => ({...prevData, end: newValue || "00:00"}))}
-                                value={taskData.end}
-                                disableClock
-                                data-testid="task-end-time-picker"/>
-                    </label>
-                    <button onClick={clearNewTask}>
+                    <div className="flex space-x-4 mb-5">
+                        <span className="inline">
+                            <p className="text-lg">
+                                Start Time:
+                            </p>
+                            <div className="border-[3px] p-1 border-gray-100">
+                                <TimePicker onChange={(newValue) => setTaskData(prevData => ({...prevData, start: newValue || "00:00"}))}
+                                    value={taskData.start}
+                                    disableClock
+                                    clearIcon
+                                    data-testid="task-start-time-picker"/>
+                            </div>
+                        </span>
+
+                        <span className="inline">
+                            <p className="text-lg">End Time:</p>
+                                <div className="border-[3px] p-1 border-gray-100">
+                                    <TimePicker onChange={(newValue) => setTaskData(prevData => ({...prevData, end: newValue || "00:00"}))}
+                                        value={taskData.end}
+                                        disableClock
+                                        clearIcon
+                                        data-testid="task-end-time-picker"
+                                        />
+                                </div>
+                        </span>
+                    </div>
+                    <div>
+                    <button onClick={clearNewTask}
+                    className="inline mt-3 w-52 mr-2 p-2 bg-red-600 rounded-2xl text-white
+                    font-semibold hover:cursor-pointer hover:brightness-105 active:brightness-110 mb-3">
                         Cancel
                     </button>
                     <input type="submit" 
+                           className=" inline mt-3 w-52 p-2 bg-indigo-400 rounded-2xl text-white
+                            font-semibold hover:cursor-pointer hover:brightness-105 active:brightness-110 mb-3"
                            value="Save Task"/>
+                    </div>
                 </form>
             </div>}
             
