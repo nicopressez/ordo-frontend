@@ -3,9 +3,17 @@ import { useAppDispatch } from "../reducers/hooks"
 import { logout } from "../reducers/auth"
 import logo from "../assets/logo.svg"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHome, faCog, faTasks, faCalendar, faArrowRightFromBracket } from "@fortawesome/free-solid-svg-icons";
+import { faHome, faCog, faTasks, faCalendar, faArrowRightFromBracket, faBars } from "@fortawesome/free-solid-svg-icons";
+import { useMediaQuery } from "@uidotdev/usehooks";
+import { useState } from "react";
 
-const Navbar = () => {
+interface NavbarProps  {
+    showNav: boolean,
+    setShowNav: React.Dispatch<React.SetStateAction<boolean>>,
+    isLargeDevice: boolean
+}
+
+const Navbar = ( {showNav, setShowNav, isLargeDevice} : NavbarProps) => {
     const dispatch = useAppDispatch()
     const navigate = useNavigate()
 
@@ -14,10 +22,26 @@ const Navbar = () => {
         navigate('/auth')
     }
     return(
-        <div className="flex flex-col fixed left-0 top-0 w-[14%] bg-white h-screen
-        border-gray-200 border-r-[1px] pt-5 pb-5">
-            <h1 className="bg-white md:w-52 font-rubikMed text-3xl md:text-4xl text-gray-800
-            pt-2 pb-2 rounded-md mb-7 hover:cursor-pointer"
+        <>
+        {!isLargeDevice && 
+        <button onClick={() => setShowNav(!showNav)}
+            className="fixed top-4 left-4 z-10 bg-gray-100 p-3 rounded-3xl">
+            <FontAwesomeIcon icon={faBars} size="xl" className="text-gray-700"/>
+        </button>}
+        <div className={`flex flex-col fixed left-0 top-0 w-[50%] md:w-[29%] lg:w-[14%] bg-white h-screen
+        border-gray-200 border-r-[1px] pt-5 pb-5 
+        ${!isLargeDevice ? "-translate-x-full transition duration-300 ease-in-out transform" : ""}
+         ${
+           !isLargeDevice && showNav
+             ? "translate-x-0"
+             : !isLargeDevice
+               ? "-translate-x-full"
+               : ""
+         }
+        `}>
+            <h1 className={`bg-white font-rubikMed text-3xl md:text-4xl text-gray-800
+            pt-2 pb-2 rounded-md mb-7 hover:cursor-pointer
+            ${!isLargeDevice && "ml-10"}`}
                     >
                 <img
                     className="inline md:h-7 mb-2  mr-1 pl-8"
@@ -74,6 +98,7 @@ const Navbar = () => {
                 </button>
             
         </div>
+        </>
     )
 }
 

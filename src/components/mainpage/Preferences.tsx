@@ -251,6 +251,7 @@ const Preferences = () => {
         }, 300);
     }
 
+    //Loading page
     if (!user) return (
         <div className= "bg-gray-100 h-screen w-screen ml-[14%] p-5">
             <div className="bg-white rounded-xl p-10 pr-20 pl-20 w-[65%] min-h-full text-lg ">
