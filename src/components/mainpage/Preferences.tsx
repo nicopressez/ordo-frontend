@@ -251,9 +251,21 @@ const Preferences = () => {
         }, 300);
     }
 
-    if(!user) return (
-        // TODO: Loading page
-        <h1> Loading</h1>
+    if (!user) return (
+        <div className= "bg-gray-100 h-screen w-screen ml-[14%] p-5">
+            <div className="bg-white rounded-xl p-10 pr-20 pl-20 w-[65%] min-h-full text-lg ">
+            <p className="w-64 rounded-full mb-10  h-7 ml-auto mr-auto  bg-gradient-to-b from-gray-300 to-gray-400 animate-pulse"></p>
+            <form className="flex flex-col items-center h-full" onSubmit={(e) => handleSubmitPreferences(e)}>
+            <p className="w-48 rounded-full mb-5 h-6 ml-auto mr-auto bg-gradient-to-b from-gray-300 to-gray-400 animate-pulse"></p>
+            <p className="w-96 rounded-full mb-2 h-8 ml-auto mr-auto bg-gradient-to-b from-gray-300 to-gray-400 animate-pulse"></p>
+            <p className="w-96 rounded-full mb-2 h-8 ml-auto mr-auto bg-gradient-to-b from-gray-300 to-gray-400 animate-pulse"></p>
+            <p className="w-48 rounded-full mt-10 mb-5 h-6 ml-auto mr-auto bg-gradient-to-b from-gray-300 to-gray-400 animate-pulse"></p>
+            <p className="w-190 rounded-lg mb-2 h-50 ml-auto mr-auto bg-gradient-to-b from-gray-300 to-gray-400 animate-pulse"></p>
+            <p className="w-44 rounded-full mt-3 h-7 ml-auto mr-auto bg-gradient-to-b from-gray-300 to-gray-400 animate-pulse"></p>
+            <p className="w-52 rounded-2xl mt-9 mb-3 p-2 h-10 ml-auto mr-auto bg-gradient-to-b from-gray-300 to-gray-400 animate-pulse"></p>
+            </form>
+            </div>
+            </div> 
     )
       
 
@@ -476,6 +488,8 @@ const Preferences = () => {
             
         </div>
     )
+        
 }
+    
 
 export default Preferences
