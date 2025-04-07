@@ -8,6 +8,7 @@ import { loginSuccess } from "../../reducers/auth";
 import { useDispatch } from "react-redux";
 import { faListCheck, faMoon, faPenToSquare, faPlus, faX } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Transition } from "@headlessui/react";
 
 
 const Preferences = () => {
@@ -19,8 +20,11 @@ const Preferences = () => {
     const [sleepStart, setSleepStart] = useState("00:00");
     const [sleepEnd, setSleepEnd] = useState("00:00");
 
+    const [preferencesSaved, setPreferencesSaved] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const [showNewForm, setShowNewForm] = useState(false);
     const [editingTask, setEditingTask] = useState<any>();
-    const [editTaskForm, setEditTaskForm] = useState(false);
 
     const [tasks, setTasks] = useState<{name: string, day: number[], start:string, end:string}[]>([]);
     const [newTaskForm, setNewTaskForm] = useState(false);
@@ -50,6 +54,7 @@ const Preferences = () => {
     //Submit new preferences to API & update user
     const handleSubmitPreferences = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        setIsLoading(true);
         setFormErrors({api: false, taskDate: false, name: false, time:false, sleep:false});
         //Format hours for all tasks back to number and send API req
         const fixedTasks = tasks.map((task) => ({
@@ -58,6 +63,8 @@ const Preferences = () => {
             start: stringToMinutes(task.start),
             end: stringToMinutes(task.end)
         }));
+
+        setPreferencesSaved(false);
 
         axios.put("https://ordo-backend.fly.dev/user/preferences", {
             fixedTasks,
@@ -70,9 +77,12 @@ const Preferences = () => {
               }
         }).then((res) => {
             //Update token 
+            setIsLoading(false);
+            setPreferencesSaved(true);
             localStorage.setItem("token", res.data.token);
             dispatch(loginSuccess(res.data.token));  
         }).catch(() => {
+            setIsLoading(false);
             //Add API error
             const checkErrors = {
                 api: true,
@@ -173,7 +183,6 @@ const Preferences = () => {
 
     const handleEditingTask = (index: number) => {
         setEditingTask(index);
-        setEditTaskForm(true)
 
         //Get this task data and append it to form 
         const data = {
@@ -225,16 +234,21 @@ const Preferences = () => {
     };
 
     //Reset task data and close new task form
-    const clearNewTask = () => {
-        setFormErrors({api: false, taskDate: false, name: false, time:false, sleep:false});
-        setNewTaskForm(false);
-        setEditTaskForm(false);
-        setTaskData({
-            name: "",
-        day: [] as number[],
-        start: "00:00",
-        end: "23:59"
-        });
+    const clearNewTask = (e: React.MouseEvent<HTMLButtonElement, MouseEvent> | null = null) => {
+        if (e) e.preventDefault();
+        setShowNewForm(false);
+
+        //Clear form data once the form is no longer visible
+        setTimeout(() => {
+            setFormErrors({api: false, taskDate: false, name: false, time:false, sleep:false});
+            setNewTaskForm(false);
+            setTaskData({
+                name: "",
+            day: [] as number[],
+            start: "00:00",
+            end: "23:59"
+            });
+        }, 300);
     }
 
     if(!user) return (
@@ -244,15 +258,21 @@ const Preferences = () => {
       
 
     if (user) return (
-        <div className=" bg-gray-100 h-screen w-screen ml-[14%] p-5 font-rubik">
-            <div className="bg-white rounded-xl p-5 w-[50%]">
-            <h1 className="font-bold text-2xl text-center mb-6 text-gray-900">
+        <div className= {`bg-gray-100 h-screen w-screen ml-[14%] p-5 font-rubik 
+            ${(showNewForm || isLoading) && "bg-gray-200"}`}>
+            <div className={`bg-white rounded-xl p-10 pr-20 pl-20 w-[65%] min-h-full text-lg 
+                ${(showNewForm || isLoading) && "brightness-95 pointer-events-none"}`}>
+            <h1 className="font-bold text-2xl text-center mb-10 text-gray-900">
                 Set Your Preferences
             </h1>
+            {preferencesSaved && 
+            <p className=" text-center -mt-6 mb-2 text-indigo-500">
+                New preferences saved successfully!
+            </p>}
             {formErrors.api && (
                 <p>An error occured, please try again</p>
             )}
-            <form className="flex flex-col items-center" onSubmit={(e) => handleSubmitPreferences(e)}>
+            <form className="flex flex-col items-center h-full" onSubmit={(e) => handleSubmitPreferences(e)}>
                 
                 <h2 className="text-xl font-bold mb-5">
                     <FontAwesomeIcon icon={faMoon} className="text-indigo-500 mr-1" size="sm"/>
@@ -282,20 +302,20 @@ const Preferences = () => {
                                 className="-mr-8"
                                 />
                 </label>
-                <h2 className="text-xl font-bold mb-5 mt-3">
+                <h2 className="text-xl font-bold mb-5 mt-10">
                     <FontAwesomeIcon icon={faListCheck} className="text-indigo-500 mr-1" size="sm"/>
                 Fixed Tasks
                 </h2>
                 {tasks[0] ?
-                <div className="border-[3px] p-1 pl-4 pr-4 border-gray-100 rounded-lg mb-2 w-[48rem]">
+                <div className="border-[3px] p-2 pl-4 pr-4 border-gray-100 rounded-lg mb-2 w-[48rem] text-lg">
                     {tasks.map((task, index) => (
                         <div className={`border-gray-100 p-2 flex items-center flex-row justify-between ${index !== 0 && "border-t-2"}`}>
                             <p className="w-32 font-bold">{task.name}</p>
                             <p className="w-52 text-center">{formatIndexToDays(task.day)}</p>
                             <p className="w-32">({task.start} - {task.end})</p>
                             <div>
-                            <FontAwesomeIcon className="mt-1 text-indigo-500 mr-3 hover:cursor-pointer" 
-                            icon={faPenToSquare} onClick={() => {handleEditingTask(index)}} />
+                            <FontAwesomeIcon className="mt-1 text-cyan-500 mr-3 hover:cursor-pointer" 
+                            icon={faPenToSquare} onClick={() => {handleEditingTask(index); setShowNewForm(true)}} />
                             <FontAwesomeIcon className="text-red-600 font-bold mt-1 hover:cursor-pointer" 
                             icon={faX} onClick={(e) => {handleDeleteTask(e, index)}} />
                             </div>
@@ -304,28 +324,34 @@ const Preferences = () => {
                 </div> :
                     (<p> No fixed tasks </p>)
                 }
-                <button onClick={(e) =>{ e.preventDefault(); setNewTaskForm(true)}}
+                <button onClick={(e) =>{ e.preventDefault(); setNewTaskForm(true); setShowNewForm(true)}}
                     className="mt-3 hover:cursor-pointer font-bold hover:brightness-110">
                     <FontAwesomeIcon icon={faPlus} className="text-indigo-500 mt-1 mr-1"/>
                     Add Fixed Task
                 </button>
-                <input type="submit" value="Save Preferences" className="mt-3 w-52 p-2 bg-indigo-400 rounded-2xl text-white
+                <input type="submit" value="Save Preferences" className="mt-9 w-52 p-2 bg-indigo-400 rounded-2xl text-white
                         font-semibold hover:cursor-pointer hover:brightness-105 active:brightness-110 mb-3" />
             </form>
             </div>
-            {(newTaskForm || editTaskForm) && 
-            <div className="bg-white rounded-xl p-5 w-[32%] fixed right-0 top-5 font-rubik">
-                <h2 className="font-bold text-2xl text-center mb-6 text-gray-900"
+            <Transition as="div" show={showNewForm} 
+            enter="transition-all duration-300"
+            enterFrom="translate-x-40 opacity-0"
+            enterTo="translate-x-0 opacity-100"
+            leave="transition-all duration-300"
+            leaveFrom="translate-x-0 opacity-100"
+            leaveTo="translate-x-40 opacity-0"
+            className="bg-white rounded-l-xl p-5 w-[32%] fixed right-0 top-0 font-rubik h-full text-lg">
+                <h2 className="font-bold text-2xl text-center mb-6 text-gray-900 mt-10"
                 >{newTaskForm 
                     ? "Create Fixed Task"
                     : "Edit Fixed Task"}</h2>
                 <form className="flex flex-col items-center" 
                 onSubmit={newTaskForm ? (e) => handleNewTask(e) : (e) => handleEditTask(e)}>
                     {formErrors.name &&
-                        <p>Task name must be specified</p>}
-                    <label className="text-center text-lg mb-5" htmlFor="name">
+                        <p className="text-red-500">Task name must be specified</p>}
+                    <label className="text-center text-xl mb-10 mt-5 font-bold" htmlFor="name">
                         Task Name:
-                        <input className="block border-[3px] rounded-sm p-1 pl-3 w-72 border-gray text-base"
+                        <input className="block border-[3px] rounded-sm p-1 pl-3 w-72 border-gray text-lg mt-1 font-normal"
                                type="name"
                                name="name"
                                id="name"
@@ -333,15 +359,15 @@ const Preferences = () => {
                                value={taskData.name}/>
                     </label>
                     {formErrors.taskDate && 
-                        <p>Select at least one day</p>}
-                    <p className="text-center text-lg">
+                        <p className="text-red-500 -mt-5 mb-3">Select at least one day</p>}
+                    <p className="text-center text-xl font-bold">
                         Days:</p>
-                    <div className="mb-5 flex gap-2">
+                    <div className=" flex gap-2 mt-3 mb-10">
                         <label htmlFor="1">
                             <input name="1"
                                    id="1"
                                    type="checkbox"
-                                   className="mr-1 accent-indigo-500 scale-110"
+                                   className="mr-1 accent-indigo-500 scale-110 text-lg"
                                    onChange={(e) => handleTaskDays(e)}
                                    checked={taskData.day.includes(1)}/>
                             Mon
@@ -403,11 +429,11 @@ const Preferences = () => {
                     </div>
                     
                     {formErrors.time && 
-                        <p>Must last at least one minute</p>}
+                        <p className="text-red-500 mb-3">Must last at least one minute</p>}
                     {formErrors.sleep && 
-                        <p>Fixed task must not overlap with sleep</p>}
+                        <p className="text-red-500 mb-3">Fixed task must not overlap with sleep</p>}
                     <div className="flex space-x-4 mb-5">
-                        <span className="inline">
+                        <span className="inline mr-10">
                             <p className="text-lg">
                                 Start Time:
                             </p>
@@ -416,6 +442,7 @@ const Preferences = () => {
                                     value={taskData.start}
                                     disableClock
                                     clearIcon
+                                    className="-mr-8"
                                     data-testid="task-start-time-picker"/>
                             </div>
                         </span>
@@ -428,23 +455,24 @@ const Preferences = () => {
                                         disableClock
                                         clearIcon
                                         data-testid="task-end-time-picker"
+                                        className="-mr-8"
                                         />
                                 </div>
                         </span>
                     </div>
-                    <div>
-                    <button onClick={clearNewTask}
-                    className="inline mt-3 w-52 mr-2 p-2 bg-red-600 rounded-2xl text-white
-                    font-semibold hover:cursor-pointer hover:brightness-105 active:brightness-110 mb-3">
+                    <div className="mt-86">
+                    <button onClick={(e) => clearNewTask(e)}
+                    className="inline mt-3  text-red-500 mr-10 text-left hover:underline
+                     hover:cursor-pointer hover:brightness-105 active:brightness-110 mb-3">
                         Cancel
                     </button>
                     <input type="submit" 
-                           className=" inline mt-3 w-52 p-2 bg-indigo-400 rounded-2xl text-white
+                           className=" inline mt-3 w-42 p-2 bg-indigo-400 rounded-2xl text-white
                             font-semibold hover:cursor-pointer hover:brightness-105 active:brightness-110 mb-3"
                            value="Save Task"/>
                     </div>
                 </form>
-            </div>}
+            </Transition>
             
         </div>
     )

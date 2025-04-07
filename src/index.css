@@ -22,3 +22,9 @@
 .react-time-picker__wrapper {
     border: none !important;
 }
+
+.react-calendar__tile:hover {
+    background-color: transparent !important;
+    color: inherit !important;
+    cursor: default !important;
+}
