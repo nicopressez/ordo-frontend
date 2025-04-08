@@ -10,12 +10,14 @@ import { faListCheck, faMoon, faPenToSquare, faPlus, faX } from "@fortawesome/fr
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Transition } from "@headlessui/react";
 
-
 const Preferences = () => {
 
     const dispatch = useDispatch();
     const auth = useAppSelector((state => state.auth));
     const user = auth.user;
+
+    const nav = useAppSelector(state => state.nav);
+    const showNav = nav.showNav;
 
     const [sleepStart, setSleepStart] = useState("00:00");
     const [sleepEnd, setSleepEnd] = useState("00:00");
@@ -272,9 +274,9 @@ const Preferences = () => {
 
     if (user) return (
         <div className= {`bg-gray-100 h-screen w-screen ml-[14%] p-5 font-rubik 
-            ${(showNewForm || isLoading) && "bg-gray-200"}`}>
+            ${(showNewForm || isLoading || showNav) && "bg-gray-200"}`}>
             <div className={`bg-white rounded-xl p-10 pr-20 pl-20 w-[65%] min-h-full text-lg 
-                ${(showNewForm || isLoading) && "brightness-95 pointer-events-none"}`}>
+                ${(showNewForm || isLoading || showNav) && "brightness-95 pointer-events-none"}`}>
             <h1 className="font-bold text-2xl text-center mb-10 text-gray-900">
                 Set Your Preferences
             </h1>

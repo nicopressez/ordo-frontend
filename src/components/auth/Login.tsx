@@ -12,8 +12,8 @@ const Login = ( {setSignupPage} : LoginProps) => {
 
     const auth = useAppSelector((state => state.auth));
     const dispatch = useAppDispatch();
-    const { isLoggedIn } = auth
-    const navigate = useNavigate()
+    const { isLoggedIn } = auth;
+    const navigate = useNavigate();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");

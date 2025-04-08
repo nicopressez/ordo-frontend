@@ -1,21 +1,21 @@
 import { NavLink, useNavigate } from "react-router-dom"
-import { useAppDispatch } from "../reducers/hooks"
+import { useAppDispatch, useAppSelector } from "../reducers/hooks"
 import { logout } from "../reducers/auth"
 import logo from "../assets/logo.svg"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { toggleNav } from "../reducers/nav";
 import { faHome, faCog, faTasks, faCalendar, faArrowRightFromBracket, faBars } from "@fortawesome/free-solid-svg-icons";
-import { useMediaQuery } from "@uidotdev/usehooks";
-import { useState } from "react";
 
 interface NavbarProps  {
-    showNav: boolean,
-    setShowNav: React.Dispatch<React.SetStateAction<boolean>>,
-    isLargeDevice: boolean
+    isLargeDevice?: boolean
 }
 
-const Navbar = ( {showNav, setShowNav, isLargeDevice} : NavbarProps) => {
-    const dispatch = useAppDispatch()
-    const navigate = useNavigate()
+const Navbar = ( {isLargeDevice} : NavbarProps) => {
+    const nav = useAppSelector(state => state.nav);
+    const showNav = nav.showNav;
+
+    const dispatch = useAppDispatch();
+    const navigate = useNavigate();
 
     const handleLogout = () => {
         dispatch(logout());
@@ -24,12 +24,13 @@ const Navbar = ( {showNav, setShowNav, isLargeDevice} : NavbarProps) => {
     return(
         <>
         {!isLargeDevice && 
-        <button onClick={() => setShowNav(!showNav)}
+        <button onClick={() => dispatch(toggleNav())}
+            data-testid="navButton"
             className="fixed top-4 left-4 z-10 bg-gray-100 p-3 rounded-3xl">
             <FontAwesomeIcon icon={faBars} size="xl" className="text-gray-700"/>
         </button>}
         <div className={`flex flex-col fixed left-0 top-0 w-[50%] md:w-[29%] lg:w-[14%] bg-white h-screen
-        border-gray-200 border-r-[1px] pt-5 pb-5 
+        border-gray-200 border-r-[1px] pt-5 pb-5  z-9
         ${!isLargeDevice ? "-translate-x-full transition duration-300 ease-in-out transform" : ""}
          ${
            !isLargeDevice && showNav

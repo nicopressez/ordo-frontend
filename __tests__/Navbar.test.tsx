@@ -8,18 +8,20 @@ import userEvent from "@testing-library/user-event";
 import axios from "axios";
 import { Provider } from "react-redux";
 import { store } from "../src/reducers/store";
+import { useMediaQuery } from "@uidotdev/usehooks";
 
 
 //Mocks
 vi.mock("axios");
 
+const isLargeDevice = useMediaQuery("only screen and (min-width: 1040px)");
 
 describe("Navbar tests", () => {
     beforeEach(() => {
         render(
             <MemoryRouter>
                 <Provider store={store}>
-                    <Navbar />
+                    <Navbar isLargeDevice={isLargeDevice}/>
                 </Provider>
             </MemoryRouter>
         )
@@ -37,5 +39,22 @@ describe("Navbar tests", () => {
         await userEvent.click(logoutButton);
 
         expect(localStorage.getItem("token")).toBe(null)
-    })
-})
+    });
+    it("Toggles the navbar on small screen", async() => {
+        () => {
+            Object.defineProperty(window, 'innerWidth', {
+              writable: true,
+              configurable: true,
+              value: 800,
+            });
+        };
+
+        // Toggle button to show nav 
+        await userEvent.click(screen.getByTestId("navButton"));
+        expect(screen.getByText("Home")).toBeInTheDocument();
+
+        // Toggle button to hide nav
+        await userEvent.click(screen.getByTestId("navButton"));
+        expect(screen.queryByText("Home")).not.toBeInTheDocument();
+
+    })})
