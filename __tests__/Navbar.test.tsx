@@ -5,10 +5,8 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vite
 import Navbar from "../src/components/Navbar"
 import { MemoryRouter, Router } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
-import axios from "axios";
 import { Provider } from "react-redux";
 import { store } from "../src/reducers/store";
-import { useMediaQuery } from 'usehooks-ts'
 
 
 
