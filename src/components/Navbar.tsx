@@ -19,7 +19,8 @@ const Navbar = ( {isLargeDevice} : NavbarProps) => {
 
     const handleLogout = () => {
         dispatch(logout());
-        navigate('/auth')
+        dispatch(toggleNav());
+        navigate('/auth');
     }
     return(
         <>
@@ -29,7 +30,7 @@ const Navbar = ( {isLargeDevice} : NavbarProps) => {
             className="fixed top-4 left-4 z-10 bg-gray-100 p-3 rounded-3xl">
             <FontAwesomeIcon icon={faBars} size="xl" className="text-gray-700"/>
         </button>}
-        <div className={`flex flex-col fixed left-0 top-0 w-[50%] md:w-[29%] lg:w-[14%] bg-white h-screen
+        <div className={`flex flex-col fixed left-0 top-0 w-[60%] md:w-[29%] lg:w-[14%] bg-white h-screen
         border-gray-200 border-r-[1px] pt-5 pb-5  z-9
         ${!isLargeDevice ? "-translate-x-full transition duration-300 ease-in-out transform" : ""}
          ${

@@ -7,6 +7,7 @@ import { MemoryRouter, Router } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
 import { Provider } from "react-redux";
 import authReducer, {User } from "../src/reducers/auth";
+import navReducer from "../src/reducers/nav"
 import { configureStore } from "@reduxjs/toolkit";
 import axios from "axios";
 
@@ -40,6 +41,7 @@ const mockUser: User = {
 const mockStore = configureStore({
     reducer: {
         auth: authReducer,
+        nav: navReducer,
     },
     preloadedState: {
         auth: {
@@ -131,8 +133,8 @@ describe("Preferences page tests", () => {
         )
 
     });
-    it("Updates a task", async() => {
-        await userEvent.click(screen.getByText("Delete", {selector: "button"}));
+    it("Deletes a task", async() => {
+        await userEvent.click(screen.getByTestId("deleteTaskButton"));
 
         expect(screen.queryByText("Gym")).not.toBeInTheDocument();
     })

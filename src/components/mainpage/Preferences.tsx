@@ -273,9 +273,10 @@ const Preferences = () => {
       
 
     if (user) return (
-        <div className= {`bg-gray-100 h-screen w-screen ml-[14%] p-5 font-rubik 
+        <div className= {`bg-gray-100 h-screen w-screen lg:ml-[14%] p-5 font-rubik 
             ${(showNewForm || isLoading || showNav) && "bg-gray-200"}`}>
-            <div className={`bg-white rounded-xl p-10 pr-20 pl-20 w-[65%] min-h-full text-lg 
+            <div className={`bg-white rounded-xl p-3 pl-5 pr-5 
+            lg:p-10 lg:pr-20 lg:pl-20 lg:w-[65%] min-h-full text-lg 
                 ${(showNewForm || isLoading || showNav) && "brightness-95 pointer-events-none"}`}>
             <h1 className="font-bold text-2xl text-center mb-10 text-gray-900">
                 Set Your Preferences
@@ -294,7 +295,7 @@ const Preferences = () => {
                 Sleep Schedule
                 </h2>
                 <label htmlFor="sleepStart" id="sleepStartLabel" 
-                className="border-[3px] p-1 pl-4 pr-4 border-gray-100 rounded-sm mb-2 w-96 flex justify-between">
+                className="border-[3px] p-1 pl-4 pr-4 border-gray-100 rounded-sm mb-2 w-75 lg:w-96 flex justify-between">
                     Sleep at:
                     <TimePicker onChange={(newValue) => setSleepStart(newValue || "00:00")}
                                 value={sleepStart} id="sleepStart"
@@ -305,7 +306,7 @@ const Preferences = () => {
                                 className=" -mr-8"/>
                 </label>
                 <label htmlFor="sleepEnd" id="sleepEndLabel"
-                className="border-[3px] p-1 pl-4 pr-4 border-gray-100 rounded-sm mb-2 w-96 flex justify-between">
+                className="border-[3px] p-1 pl-4 pr-4 border-gray-100 rounded-sm mb-2 w-75 lg:w-96 flex justify-between">
                     Wake up at:
                     <TimePicker onChange={(newValue) => setSleepEnd(newValue || "00:00")}
                                 value={sleepEnd} 
@@ -322,21 +323,22 @@ const Preferences = () => {
                 Fixed Tasks
                 </h2>
                 {tasks[0] ?
-                <div className="border-[3px] p-2 pl-4 pr-4 border-gray-100 rounded-lg mb-2 w-[48rem] text-lg">
+                <table className="border-[3px] p-2 pl-4 pr-4 border-gray-100 rounded-lg mb-2 w-[48rem] text-lg">
                     {tasks.map((task, index) => (
-                        <div className={`border-gray-100 p-2 flex items-center flex-row justify-between ${index !== 0 && "border-t-2"}`}>
-                            <p className="w-32 font-bold">{task.name}</p>
-                            <p className="w-52 text-center">{formatIndexToDays(task.day)}</p>
-                            <p className="w-32">({task.start} - {task.end})</p>
+                        <div className={`border-gray-100 p-2 flex items-center flex-col lg:flex-row justify-between ${index !== 0 && "border-t-2"}`}>
+                            <p className="lg:w-32 font-bold">{task.name}</p>
+                            <p className="lg:w-52 lg:text-center">{formatIndexToDays(task.day)}</p>
+                            <p className="lg:w-32">({task.start} - {task.end})</p>
                             <div>
                             <FontAwesomeIcon className="mt-1 text-cyan-500 mr-3 hover:cursor-pointer" 
                             icon={faPenToSquare} onClick={() => {handleEditingTask(index); setShowNewForm(true)}} />
                             <FontAwesomeIcon className="text-red-600 font-bold mt-1 hover:cursor-pointer" 
-                            icon={faX} onClick={(e) => {handleDeleteTask(e, index)}} />
+                            icon={faX} onClick={(e) => {handleDeleteTask(e, index)}} 
+                            data-testid="deleteTaskButton"/>
                             </div>
                         </div> 
                     ))}
-                </div> :
+                </table> :
                     (<p> No fixed tasks </p>)
                 }
                 <button onClick={(e) =>{ e.preventDefault(); setNewTaskForm(true); setShowNewForm(true)}}
@@ -355,7 +357,9 @@ const Preferences = () => {
             leave="transition-all duration-300"
             leaveFrom="translate-x-0 opacity-100"
             leaveTo="translate-x-40 opacity-0"
-            className="bg-white rounded-l-xl p-5 w-[32%] fixed right-0 top-0 font-rubik h-full text-lg">
+            className={`bg-white rounded-l-xl p-5 w-[80%] lg:w-[32%] fixed right-0 top-0 font-rubik h-full text-lg
+                ${showNav && "brightness-95 pointer-events-none"}`
+            }>
                 <h2 className="font-bold text-2xl text-center mb-6 text-gray-900 mt-10"
                 >{newTaskForm 
                     ? "Create Fixed Task"
@@ -366,7 +370,7 @@ const Preferences = () => {
                         <p className="text-red-500">Task name must be specified</p>}
                     <label className="text-center text-xl mb-10 mt-5 font-bold" htmlFor="name">
                         Task Name:
-                        <input className="block border-[3px] rounded-sm p-1 pl-3 w-72 border-gray text-lg mt-1 font-normal"
+                        <input className="block border-[3px] rounded-sm p-1 pl-3 lg:w-72 border-gray text-lg mt-1 font-normal"
                                type="name"
                                name="name"
                                id="name"
@@ -377,7 +381,7 @@ const Preferences = () => {
                         <p className="text-red-500 -mt-5 mb-3">Select at least one day</p>}
                     <p className="text-center text-xl font-bold">
                         Days:</p>
-                    <div className=" flex gap-2 mt-3 mb-10">
+                    <div className=" flex gap-1 lg:gap-2 mt-3 mb-10">
                         <label htmlFor="1">
                             <input name="1"
                                    id="1"
@@ -475,7 +479,7 @@ const Preferences = () => {
                                 </div>
                         </span>
                     </div>
-                    <div className="mt-86">
+                    <div className="mt-50 lg:mt-86">
                     <button onClick={(e) => clearNewTask(e)}
                     className="inline mt-3  text-red-500 mr-10 text-left hover:underline
                      hover:cursor-pointer hover:brightness-105 active:brightness-110 mb-3">
