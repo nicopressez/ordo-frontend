@@ -10,6 +10,13 @@ import { faListCheck, faMoon, faPenToSquare, faPlus, faX } from "@fortawesome/fr
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Transition } from "@headlessui/react";
 
+const defaultTaskData = {
+        name: "",
+        day: [] as number[],
+        start: "00:00",
+        end: "23:59"
+    }
+
 const Preferences = () => {
 
     const dispatch = useDispatch();
@@ -31,12 +38,7 @@ const Preferences = () => {
     const [tasks, setTasks] = useState<{name: string, day: number[], start:string, end:string}[]>([]);
     const [newTaskForm, setNewTaskForm] = useState(false);
     const [formErrors, setFormErrors] = useState({api: false,taskDate: false, name: false, time:false, sleep:false})
-    const [taskData, setTaskData] = useState({
-        name: "",
-        day: [] as number[],
-        start: "00:00",
-        end: "23:59"
-    });
+    const [taskData, setTaskData] = useState(defaultTaskData);
 
     //Initialize form with user preferences
     useEffect(() => {
@@ -244,12 +246,7 @@ const Preferences = () => {
         setTimeout(() => {
             setFormErrors({api: false, taskDate: false, name: false, time:false, sleep:false});
             setNewTaskForm(false);
-            setTaskData({
-                name: "",
-            day: [] as number[],
-            start: "00:00",
-            end: "23:59"
-            });
+            setTaskData(defaultTaskData);
         }, 300);
     }
 

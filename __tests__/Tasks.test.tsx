@@ -18,14 +18,29 @@ describe("Tasks page test", () => {
             </MemoryRouter>
         )
     });
+    afterEach(() => {
+        cleanup();
+    })
     it("Renders tasks component", () => {
         expect(screen.getByText("My tasks")).toBeInTheDocument();
-        expect(screen.getByText("Add new task")).toBeInTheDocument();
+        expect(screen.getByText("Add new task", {selector: "button"})).toBeInTheDocument();
     });
     it("Opens new task form on button click", async() => {
-        await userEvent.click(screen.getByText("Add new task"))
+        await userEvent.click(screen.getByText("Add new task", {selector: "button"}))
 
-        expect(screen.getByText("Task name")).toBeInTheDocument();
-        expect(screen.getByText("Duration")).toBeInTheDocument();
-    } )
+        expect(screen.getByText("Task name:")).toBeInTheDocument();
+        expect(screen.getByText("Duration:")).toBeInTheDocument();
+    });
+    it("Creates task and shows it in the list", async() => {
+        //Fill new task form && submit
+        await userEvent.click(screen.getByText("Add new task", {selector: "button"}))
+        await userEvent.type(screen.getByLabelText("Task name:"), "Side project");
+        await userEvent.type(screen.getByLabelText("Duration:"), "12");
+        await userEvent.selectOptions(screen.getByLabelText("Priority:"), "3");
+        await userEvent.type(screen.getByLabelText("Max session length:"), "3");
+        await userEvent.click(screen.getByDisplayValue("Save"));
+
+        //Task now shows on dashboard
+        expect(screen.getByText("Side project")).toBeInTheDocument();
+    })
 } )
