@@ -1,5 +1,17 @@
 import { Transition } from "@headlessui/react";
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useAppDispatch, useAppSelector } from "../../reducers/hooks";
+import axios from "axios";
+import { refreshUserInfo } from "../../reducers/auth";
+
+interface Task {
+    active: boolean,
+    completedHours: number,
+    duration: number,
+    name: string,
+    totalHours: number
+    _id: string,
+}
 
 interface TaskFormData {
     name: string,
@@ -23,7 +35,11 @@ const defaultFormData = {
 
 const Tasks = () => {
 
-    const [tasks, setTasks] = useState()
+    const dispatch = useAppDispatch();
+    const auth = useAppSelector(state => state.auth)
+    const user = auth.user
+
+    const [tasks, setTasks] = useState<Task[]>([])
 
     const [newTaskForm, setNewTaskForm] = useState(false);
     const [editTaskForm, setEditTaskForm] = useState(false);
@@ -33,19 +49,58 @@ const Tasks = () => {
     const handleTaskSave = (e : React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         // TODO:Form error handling
-        // TODO:Push to tasks
+        if(newTaskForm) {
+            console.log(taskFormData)
+            axios.post("https://ordo-backend.fly.dev/task", {
+                "tasks" : [taskFormData],
+            } , {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`,
+                }
+            }).then((res) => {
+                //Refresh user info to get updated tasks info
+                dispatch(refreshUserInfo(res.data.token));
+                handleCancelForm();
+            }).catch((err) => {
+                //TODO: Add error handling
+                console.log(err)
+            })
+        }
     };
 
-    const handleCancelForm = (e : React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    const handleCancelForm = (e : React.MouseEvent<HTMLButtonElement, MouseEvent> | null = null) => {
         //Reset forms
-        e.preventDefault();
+        e?.preventDefault();
         setEditTaskForm(false);
         setNewTaskForm(false);
         setTaskFormData(defaultFormData);
     }
 
-    // TODO:Load tasks on initial render
-    return (
+    useEffect(() => {
+        if(user){
+            axios.get("https://ordo-backend.fly.dev/task", {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`,
+                }
+            }).then((res) => {
+                console.log(res.data.tasks)
+                const currentTasks = res.data.tasks
+                setTasks(currentTasks);
+            }).catch((err) => {
+                //TODO: Add error handling
+                console.log(err)
+            })
+        }
+    },[user])
+
+    if (!user) return (
+        <div>
+            Loading
+        </div>
+    )
+    if (user) return (
         <div className="ml-[14%]">
             <div>
                 <h1>My tasks</h1>
@@ -53,9 +108,20 @@ const Tasks = () => {
                 <button onClick={() => setNewTaskForm(true)}>
                     Add new task
                 </button>
-                <p>
-                    Display tasks here
-                </p>
+                {tasks[0] 
+                ? 
+                <div>
+                <h1>Tasks:</h1>
+                {tasks.map((task) => (
+                    <div>
+                        <p>{task.name}</p>
+                        <p>{task.completedHours} / {task.totalHours}</p>
+                    </div>)
+                )
+                }
+                </div>
+                : (<p>No tasks</p>)
+                }
             </div>
             <Transition show={newTaskForm || editTaskForm}
                 as="div">
@@ -130,7 +196,7 @@ const Tasks = () => {
                                 onChange={(e) => setTaskFormData(prevData => 
                                 ({...prevData, recurrent: e.target.value === "yes" ? true : false}))}>
                             <option value="yes">Yes</option>
-                            <option selected value="no">No</option>
+                            <option value="no">No</option>
                         </select>
                     </label>
                     {editTaskForm && 
