@@ -1,5 +1,5 @@
 import React from "react";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, getByText, render, screen } from "@testing-library/react";
 import '@testing-library/jest-dom/vitest';
 import { afterEach, beforeAll, beforeEach, describe,afterAll, expect, it, vi } from "vitest";
 import Tasks from "../src/components/mainpage/Tasks"
@@ -130,5 +130,19 @@ describe("Tasks page test", () => {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer dummyToken`,
               }})
-})
+    });
+    it("Displays error message on wrong form input", async() => {
+        //Fill new task form && submit
+        await userEvent.click(screen.getByText("Add new task", {selector: "button"}))
+        await userEvent.selectOptions(screen.getByLabelText("Priority:"), "3");
+        await userEvent.type(screen.getByLabelText("Max session length:"), "3");
+        await userEvent.click(screen.getByDisplayValue("Save"));
+
+        expect(screen.getByText("Task name must be defined and under 40 characters")).toBeInTheDocument();
+        expect(screen.getByText("Duration must be defined")).toBeInTheDocument();
+    });
+    it("Opens populated form to edit existing task", async() => {
+        await userEvent.click(screen.getByText("Gym"))
+        
+    })
 })

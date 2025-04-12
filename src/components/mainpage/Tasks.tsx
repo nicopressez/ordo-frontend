@@ -3,9 +3,8 @@ import { useEffect, useState } from "react"
 import { useAppDispatch, useAppSelector } from "../../reducers/hooks";
 import axios from "axios";
 import { refreshUserInfo } from "../../reducers/auth";
-import { v4 as uuidv4 } from 'uuid';
 
-interface Task {
+interface ReducedTask {
     active: boolean,
     completedHours: number,
     duration: number,
@@ -21,7 +20,9 @@ interface TaskFormData {
     priority: number,
     maxHoursPerSession: number | undefined,
     deadline: number | undefined,
-    recurrent: boolean
+    recurrent: boolean,
+    scheduledSessions?: [{_id: string, startTime: Date, duration: number}],
+    completedSessions?: [{startTime: Date, duration: number}]
 }
 
 const defaultFormData = {
@@ -31,7 +32,7 @@ const defaultFormData = {
         priority: 2,
         maxHoursPerSession: undefined,
         deadline: undefined,
-        recurrent: false,
+        recurrent: true,
 }
 
 const Tasks = () => {
@@ -40,16 +41,24 @@ const Tasks = () => {
     const auth = useAppSelector(state => state.auth)
     const user = auth.user
 
-    const [tasks, setTasks] = useState<Task[]>([])
+    const [tasks, setTasks] = useState<ReducedTask[]>([])
 
     const [newTaskForm, setNewTaskForm] = useState(false);
     const [editTaskForm, setEditTaskForm] = useState(false);
 
     const [taskFormData, setTaskFormData] = useState<TaskFormData>(defaultFormData)
+    const [formErrors, setFormErrors] = useState({name: false, duration: false})
 
     const handleTaskSave = (e : React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        // TODO:Form error handling
+        //Check for errors
+        const checkErrors = {
+            name: taskFormData.name.length === 0 || taskFormData.name.length > 40,
+            duration: taskFormData.duration === (0 || undefined),
+        }
+        setFormErrors(checkErrors);
+        if (Object.values(checkErrors).some(value => value)) return;
+        //Create new task on DB
         if(newTaskForm) {
             axios.post("https://ordo-backend.fly.dev/task", {
                 "tasks" : [taskFormData],
@@ -75,6 +84,32 @@ const Tasks = () => {
         setEditTaskForm(false);
         setNewTaskForm(false);
         setTaskFormData(defaultFormData);
+    };
+
+    const toggleEditTask = (id : String) => {
+        axios.get(`https://ordo-backend.fly.dev/task/${id}`, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("token")}`,
+            }
+        }).then((res) => {
+            const responseData = res.data.task._doc;
+            setEditTaskForm(true);
+            setTaskFormData({
+                name:responseData.name,
+                description: responseData.description,
+                duration: responseData.duration,
+                priority: responseData.priority,
+                maxHoursPerSession: responseData.maxHoursPerSession,
+                deadline: responseData.deadline,
+                recurrent: responseData.recurrent,
+                scheduledSessions: responseData.scheduledSessions,
+                completedSessions: responseData.completedSessions
+            });
+        }).catch((err) => {
+            //TODO: Add error handling
+            console.log(err)
+        })
     }
 
     useEffect(() => {
@@ -112,7 +147,7 @@ const Tasks = () => {
                 <div>
                 <h1>Tasks:</h1>
                 {tasks.map((task) => (
-                    <div key={uuidv4()}>
+                    <div key={task._id} onClick={() => toggleEditTask(task._id)}>
                         <p>{task.name}</p>
                         <p>{task.completedHours} / {task.totalHours}</p>
                     </div>)
@@ -125,6 +160,9 @@ const Tasks = () => {
             <Transition show={newTaskForm || editTaskForm}
                 as="div">
                 <form onSubmit={(e) => handleTaskSave(e)}>
+                    {formErrors.name && 
+                        <p>Task name must be defined and under 40 characters</p>
+                    }
                     <label htmlFor="name">
                         Task name:
                         <input type="text" 
@@ -141,10 +179,15 @@ const Tasks = () => {
                                value={taskFormData.description}
                                onChange={(e) => setTaskFormData(prevData => ({...prevData, description: e.target.value}))}/>
                     </label>
+                    {formErrors.duration && 
+                        <p>
+                        Duration must be defined
+                        </p>}
                     <label htmlFor="duration">
                         Duration:
                         <input type="number" 
                                min={0}
+                               max={100}
                                name="duration" 
                                id="duration"
                                value={taskFormData.duration || ""}
@@ -164,7 +207,8 @@ const Tasks = () => {
                     <label htmlFor="maxHoursPerSession">
                         Max session length:
                         <input type="number" 
-                               min={0}
+                               min={1}
+                               max={16}
                                name="maxHoursPerSession" 
                                id="maxHoursPerSession"
                                value={taskFormData.maxHoursPerSession || ""}
