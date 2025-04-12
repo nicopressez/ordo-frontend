@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import { useAppDispatch, useAppSelector } from "../../reducers/hooks";
 import axios from "axios";
 import { refreshUserInfo } from "../../reducers/auth";
+import { v4 as uuidv4 } from 'uuid';
 
 interface Task {
     active: boolean,
@@ -50,7 +51,6 @@ const Tasks = () => {
         e.preventDefault();
         // TODO:Form error handling
         if(newTaskForm) {
-            console.log(taskFormData)
             axios.post("https://ordo-backend.fly.dev/task", {
                 "tasks" : [taskFormData],
             } , {
@@ -85,7 +85,6 @@ const Tasks = () => {
                     "Authorization": `Bearer ${localStorage.getItem("token")}`,
                 }
             }).then((res) => {
-                console.log(res.data.tasks)
                 const currentTasks = res.data.tasks
                 setTasks(currentTasks);
             }).catch((err) => {
@@ -113,7 +112,7 @@ const Tasks = () => {
                 <div>
                 <h1>Tasks:</h1>
                 {tasks.map((task) => (
-                    <div>
+                    <div key={uuidv4()}>
                         <p>{task.name}</p>
                         <p>{task.completedHours} / {task.totalHours}</p>
                     </div>)
@@ -148,14 +147,14 @@ const Tasks = () => {
                                min={0}
                                name="duration" 
                                id="duration"
-                               value={taskFormData.duration}
+                               value={taskFormData.duration || ""}
                                onChange={(e) => setTaskFormData(prevData => ({...prevData, duration: +(e.target.value)}))}/>
                     </label>
                     <label htmlFor="priority">
                         Priority:
                         <select name="priority"
                                 id="priority"
-                                value={taskFormData.priority.toString()}
+                                value={taskFormData.priority.toString() || ""}
                                 onChange={(e) => setTaskFormData(prevData => ({...prevData, priority: +(e.target.value)}))}>
                             <option value="1">Low</option>
                             <option value="2">Medium</option>
@@ -168,7 +167,7 @@ const Tasks = () => {
                                min={0}
                                name="maxHoursPerSession" 
                                id="maxHoursPerSession"
-                               value={taskFormData.maxHoursPerSession}
+                               value={taskFormData.maxHoursPerSession || ""}
                                onChange={(e) => setTaskFormData(prevData => ({...prevData, maxHoursPerSession: +(e.target.value)}))}
                                />
                     </label>
