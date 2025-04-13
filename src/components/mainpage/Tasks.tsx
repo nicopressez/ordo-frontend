@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import { useAppDispatch, useAppSelector } from "../../reducers/hooks";
 import axios from "axios";
 import { refreshUserInfo } from "../../reducers/auth";
+import { v4 as uuidv4 } from 'uuid';
 
 interface ReducedTask {
     active: boolean,
@@ -244,12 +245,28 @@ const Tasks = () => {
                     </label>
                     {editTaskForm && 
                     <div>
-                        <p>
-                            Scheduled sessions
-                        </p>
-                        <p>
-                        Completed session
-                        </p>
+                        {taskFormData.scheduledSessions?.[0] 
+                        ? <div>
+                            <h1>Scheduled sessions</h1>
+                            {taskFormData.scheduledSessions.map((session) => (
+                                <div key={session._id}>
+                                    <p>{session.startTime.toDateString()}</p>
+                                    <p>{session.duration}</p>
+                                </div>
+                            ))}
+                          </div>
+                        : <p>No scheduled sessions yet</p>
+                        }
+                        {taskFormData.completedSessions?.[0] && 
+                         <div>
+                         <h1>Scheduled sessions</h1>
+                         {taskFormData.completedSessions.map((session) => (
+                             <div key={uuidv4()}>
+                                 <p>{session.startTime.toDateString()}</p>
+                                 <p>{session.duration}</p>
+                             </div>
+                         ))}
+                       </div>}
                     </div>}
                     <button onClick={(e) => handleCancelForm(e)}>
                         Cancel

@@ -1,9 +1,9 @@
 import React from "react";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import '@testing-library/jest-dom/vitest';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import Preferences from "../src/components/mainpage/Preferences"
-import { MemoryRouter, Router } from "react-router-dom";
+import { MemoryRouter } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
 import { Provider } from "react-redux";
 import authReducer, {User } from "../src/reducers/auth";
