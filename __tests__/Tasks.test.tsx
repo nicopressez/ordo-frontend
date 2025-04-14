@@ -65,6 +65,10 @@ const mockStore = configureStore({
     },
 });
 
+const mockResToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." +
+            "eyJ1c2VyIjp7Im5hbWUiOiJUZXN0IFVzZXIiLCJlbWFpbCI6InRlc3RAZW1haWwuY29tIn19." +
+            "dummysignature"
+
 describe("Tasks page test", () => {
     beforeAll(() => {
         //HeadlessUI polyfill
@@ -98,7 +102,6 @@ describe("Tasks page test", () => {
         }
 
         if (url === "https://ordo-backend.fly.dev/task/task1") {
-            console.log("Gym called")
             return Promise.resolve(
             createMockResponse({
                 task: 
@@ -148,10 +151,8 @@ describe("Tasks page test", () => {
         expect(screen.getByText("Task name:")).toBeInTheDocument();
         expect(screen.getByText("Duration:")).toBeInTheDocument();
     });
-    it("Creates task and shows it in the list", async() => {
-        vi.spyOn(axios, "post").mockResolvedValue({ data: {token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." +
-    "eyJ1c2VyIjp7Im5hbWUiOiJUZXN0IFVzZXIiLCJlbWFpbCI6InRlc3RAZW1haWwuY29tIn19." +
-    "dummysignature"} });
+    it("Creates task and calls API", async() => {
+        vi.spyOn(axios, "post").mockResolvedValue({ data: {token: mockResToken} });
         //Fill new task form && submit
         await userEvent.click(screen.getByText("Add new task", {selector: "button"}))
         await userEvent.type(screen.getByLabelText("Task name:"), "Side project");
@@ -197,13 +198,57 @@ describe("Tasks page test", () => {
         expect(screen.getByLabelText("Task name:")).toHaveValue("Gym");
         expect(screen.getByLabelText("Description:")).toHaveValue("Gym description");
         expect(screen.getByLabelText("Duration:")).toHaveValue(10);
+    });
+    it("Edits existing task and send API put req", async() => {
+        vi.spyOn(axios, "put").mockResolvedValue({ data: {token: mockResToken} });
+
+        await waitFor(async() => {
+            expect(screen.getByText("Gym")).toBeInTheDocument();
+        }) 
+        await userEvent.click(screen.getByText("Gym"));
 
         //Edit task && submit form
-        await userEvent.type(screen.getByLabelText("Task name:"), "Not gym")
+        await userEvent.clear(screen.getByLabelText("Task name:"));
+        await userEvent.type(screen.getByLabelText("Task name:"), "Not gym");
+        await userEvent.clear(screen.getByLabelText("Description:"));
         await userEvent.type(screen.getByLabelText("Description:"), "Not going to the gym");
+        await userEvent.clear(screen.getByLabelText("Duration:"));
         await userEvent.type(screen.getByLabelText("Duration:"), "5");
         await userEvent.click(screen.getByDisplayValue("Save"));
 
-        expect(screen.getByText("Not gym")).toBeInTheDocument();
+        expect(axios.put).toHaveBeenCalledWith("https://ordo-backend.fly.dev/task/task1", {
+            "name": "Not gym",
+            "description": "Not going to the gym",
+            "duration": 5,
+            "priority": 2,
+            "maxHoursPerSession": undefined,
+            "deadline": undefined,
+            "recurrent": true,
+            "scheduledSessions": [],
+            "completedSessions": [],
+        }, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer dummyToken`,
+            }})
+    });
+    it("Creates scheduled session and renders it in the list", async() => {
+        //Open edit task form
+        await waitFor(async() => {
+            expect(screen.getByText("Gym")).toBeInTheDocument();
+        }) 
+        await userEvent.click(screen.getByText("Gym"));
+
+        //Create session
+        await userEvent.click(screen.getByText("Add session"));
+        await userEvent.selectOptions(screen.getByLabelText("Day:"), "1");
+        await userEvent.type(screen.getByLabelText("Starting time:"), "1000");
+        await userEvent.type(screen.getByLabelText("Duration:"), "100");
+        await userEvent.click(screen.getByDisplayValue("Add"));
+
+        //Session shows in the list
+        expect(screen.getByText("Mon")).toBeInTheDocument();
+        expect(screen.getByText("10:00 - 11:00")).toBeInTheDocument();
+        
     })
 })

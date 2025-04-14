@@ -45,7 +45,7 @@ const Tasks = () => {
     const [tasks, setTasks] = useState<ReducedTask[]>([])
 
     const [newTaskForm, setNewTaskForm] = useState(false);
-    const [editTaskForm, setEditTaskForm] = useState(false);
+    const [editTaskForm, setEditTaskForm] = useState<[boolean, String]>([false, ""]);
 
     const [taskFormData, setTaskFormData] = useState<TaskFormData>(defaultFormData)
     const [formErrors, setFormErrors] = useState({name: false, duration: false})
@@ -77,12 +77,28 @@ const Tasks = () => {
                 console.log(err)
             })
         }
+        else if(editTaskForm[0]) {
+            axios.put(`https://ordo-backend.fly.dev/task/${editTaskForm[1]}`, {
+                ...taskFormData
+            } , {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`,
+                }
+            }).then((res) => {
+                dispatch(refreshUserInfo(res.data.token));
+                handleCancelForm();
+            }).catch((err) => {
+                //TODO: Add error handling
+                console.log(err)
+            })
+        }
     };
 
     const handleCancelForm = (e : React.MouseEvent<HTMLButtonElement, MouseEvent> | null = null) => {
         //Reset forms
         e?.preventDefault();
-        setEditTaskForm(false);
+        setEditTaskForm([false, ""]);
         setNewTaskForm(false);
         setTaskFormData(defaultFormData);
     };
@@ -95,7 +111,7 @@ const Tasks = () => {
             }
         }).then((res) => {
             const responseData = res.data.task._doc;
-            setEditTaskForm(true);
+            setEditTaskForm([true, id]);
             setTaskFormData({
                 name:responseData.name,
                 description: responseData.description,
@@ -158,7 +174,7 @@ const Tasks = () => {
                 : (<p>No tasks</p>)
                 }
             </div>
-            <Transition show={newTaskForm || editTaskForm}
+            <Transition show={newTaskForm || editTaskForm[0]}
                 as="div">
                 <form onSubmit={(e) => handleTaskSave(e)}>
                     {formErrors.name && 
