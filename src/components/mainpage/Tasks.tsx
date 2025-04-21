@@ -22,8 +22,8 @@ interface TaskFormData {
     maxHoursPerSession: number | undefined,
     deadline: number | undefined,
     recurrent: boolean,
-    scheduledSessions?: [{_id: string, startTime: Date, duration: number}],
-    completedSessions?: [{startTime: Date, duration: number}]
+    scheduledSessions?: [{_id: string, startTime: string, duration: number}],
+    completedSessions?: [{startTime: string, duration: number}]
 }
 
 const defaultFormData = {
@@ -48,7 +48,10 @@ const Tasks = () => {
     const [editTaskForm, setEditTaskForm] = useState<[boolean, String]>([false, ""]);
 
     const [taskFormData, setTaskFormData] = useState<TaskFormData>(defaultFormData)
-    const [formErrors, setFormErrors] = useState({name: false, duration: false})
+    const [formErrors, setFormErrors] = useState({name: false, duration: false});
+
+    const [addSession, setAddSession] = useState(false);
+    const [newSessionData, setNewSessionData] = useState({startTime: "", duration: 0})
 
     const handleTaskSave = (e : React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -127,6 +130,60 @@ const Tasks = () => {
             //TODO: Add error handling
             console.log(err)
         })
+    };
+
+    const getTodaysDate = () => {
+        //Get todays date in format yyyy-mm-ddThh-mm
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = ("0" + (today.getMonth() + 1)).slice(-2);
+        const day = ("0" + (today.getDate() + 1)).slice(-2);
+        const hours = ("0" + today.getHours()).slice(-2);
+        const minutes = ("0" + today.getMinutes()).slice(-2);
+
+        return `${year}-${month}-${day}T${hours}:${minutes}`
+    };
+
+    const toggleNewSession = (e : React.MouseEvent<HTMLButtonElement, MouseEvent> | null = null, toggle : boolean) => {
+        if(toggle) {
+            //Populate form data and open form
+            e?.preventDefault();
+            setNewSessionData({startTime: getTodaysDate(), duration: 1});
+            setAddSession(true);
+        }
+        else {
+            //Clean up data and close new session form
+            e?.preventDefault();
+            setAddSession(false);
+            setNewSessionData({startTime: "", duration: 1});
+        }
+    };
+
+    const handleNewSession = (e : React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        e.preventDefault();
+        axios.post(`https://ordo-backend.fly.dev/task/${editTaskForm[1]}/scheduled-sessions`, {
+            "scheduledSessions" : [newSessionData]
+        }, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("token")}`,
+            }
+        }).then((res) => {
+            dispatch(refreshUserInfo(res.data.token));
+
+            //Update scheduled sessions 
+            const updatedFormData = taskFormData
+            updatedFormData.scheduledSessions?.push(
+                {_id: res.data.task._id as string, startTime: newSessionData.startTime, duration: newSessionData.duration});
+            setTaskFormData(updatedFormData)
+
+            //Reset form
+            toggleNewSession(null, false);
+        }).catch((err) => {
+            console.log(err)
+            //TODO: Add error handling
+        })
+
     }
 
     useEffect(() => {
@@ -266,19 +323,35 @@ const Tasks = () => {
                             <h1>Scheduled sessions</h1>
                             {taskFormData.scheduledSessions.map((session) => (
                                 <div key={session._id}>
-                                    <p>{session.startTime.toDateString()}</p>
+                                    <p>{session.startTime}</p>
                                     <p>{session.duration}</p>
                                 </div>
                             ))}
                           </div>
                         : <p>No scheduled sessions yet</p>
                         }
+                        <button onClick={(e) => toggleNewSession(e, true)}>Add session</button>
+                        {addSession && 
+                        <form>
+                            <label htmlFor="startTime">Date:
+                                <input type="datetime-local" min={getTodaysDate()} value={newSessionData.startTime}
+                                onChange={(e) => setNewSessionData(prevData => ({...prevData, startTime: e.target.value}))}
+                                name="startTime" id="startTime"/>
+                            </label>
+                            <label htmlFor="sessionDuration">Duration (hours):
+                                <input type="number" min={0} max={16} value={newSessionData.duration}
+                                onChange={(e) => setNewSessionData(prevData => ({...prevData, duration: +(e.target.value)}))}
+                                name="sessionDuration" id="sessionDuration"/>
+                            </label>
+                            <button onClick={(e) => {toggleNewSession(e,false)}}>Cancel</button>
+                            <button onClick={(e) => handleNewSession(e)}>Add</button>
+                        </form>}
                         {taskFormData.completedSessions?.[0] && 
                          <div>
                          <h1>Scheduled sessions</h1>
                          {taskFormData.completedSessions.map((session) => (
                              <div key={uuidv4()}>
-                                 <p>{session.startTime.toDateString()}</p>
+                                 <p>{session.startTime}</p>
                                  <p>{session.duration}</p>
                              </div>
                          ))}

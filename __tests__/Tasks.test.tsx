@@ -233,6 +233,7 @@ describe("Tasks page test", () => {
             }})
     });
     it("Creates scheduled session and renders it in the list", async() => {
+        vi.spyOn(axios, "post").mockResolvedValue({ data: {token: mockResToken, task: {_id: "task1"}} });
         //Open edit task form
         await waitFor(async() => {
             expect(screen.getByText("Gym")).toBeInTheDocument();
@@ -241,14 +242,10 @@ describe("Tasks page test", () => {
 
         //Create session
         await userEvent.click(screen.getByText("Add session"));
-        await userEvent.selectOptions(screen.getByLabelText("Day:"), "1");
-        await userEvent.type(screen.getByLabelText("Starting time:"), "1000");
-        await userEvent.type(screen.getByLabelText("Duration:"), "100");
-        await userEvent.click(screen.getByDisplayValue("Add"));
+        await userEvent.click(screen.getByText("Add", {selector: "button"}));
 
         //Session shows in the list
-        expect(screen.getByText("Mon")).toBeInTheDocument();
-        expect(screen.getByText("10:00 - 11:00")).toBeInTheDocument();
-        
-    })
+        expect(screen.getByText("1")).toBeInTheDocument();
+        expect(axios.post).toHaveBeenCalled()
+})
 })
