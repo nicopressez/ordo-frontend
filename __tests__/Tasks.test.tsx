@@ -139,14 +139,14 @@ describe("Tasks page test", () => {
     })
     it("Renders tasks component", () => {
         expect(screen.getByText("My tasks")).toBeInTheDocument();
-        expect(screen.getByText("Add new task", {selector: "button"})).toBeInTheDocument();
+        expect(screen.getByText("Add New Task", {selector: "button"})).toBeInTheDocument();
     });
     it("Displays tasks returned by API", async () => {
         const taskName = await screen.findByText("Gym");
         expect(taskName).toBeInTheDocument();
       });
     it("Opens new task form on button click", async() => {
-        await userEvent.click(screen.getByText("Add new task", {selector: "button"}))
+        await userEvent.click(screen.getByText("Add New Task", {selector: "button"}))
 
         expect(screen.getByText("Task name:")).toBeInTheDocument();
         expect(screen.getByText("Duration:")).toBeInTheDocument();
@@ -154,7 +154,7 @@ describe("Tasks page test", () => {
     it("Creates task and calls API", async() => {
         vi.spyOn(axios, "post").mockResolvedValue({ data: {token: mockResToken} });
         //Fill new task form && submit
-        await userEvent.click(screen.getByText("Add new task", {selector: "button"}))
+        await userEvent.click(screen.getByText("Add New Task", {selector: "button"}))
         await userEvent.type(screen.getByLabelText("Task name:"), "Side project");
         await userEvent.type(screen.getByLabelText("Duration:"), "12");
         await userEvent.selectOptions(screen.getByLabelText("Priority:"), "3");
@@ -180,7 +180,7 @@ describe("Tasks page test", () => {
     });
     it("Displays error message on wrong form input", async() => {
         //Fill new task form && submit
-        await userEvent.click(screen.getByText("Add new task", {selector: "button"}))
+        await userEvent.click(screen.getByText("Add New Task", {selector: "button"}))
         await userEvent.selectOptions(screen.getByLabelText("Priority:"), "3");
         await userEvent.type(screen.getByLabelText("Max session length:"), "3");
         await userEvent.click(screen.getByDisplayValue("Save"));

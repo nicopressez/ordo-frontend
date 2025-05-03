@@ -4,6 +4,8 @@ import { useAppDispatch, useAppSelector } from "../../reducers/hooks";
 import axios from "axios";
 import { refreshUserInfo } from "../../reducers/auth";
 import { v4 as uuidv4 } from 'uuid';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faListCheck, faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 
 interface ReducedTask {
     active: boolean,
@@ -41,6 +43,9 @@ const Tasks = () => {
     const dispatch = useAppDispatch();
     const auth = useAppSelector(state => state.auth)
     const user = auth.user
+
+    const nav = useAppSelector(state => state.nav);
+    const showNav = nav.showNav;
 
     const [tasks, setTasks] = useState<ReducedTask[]>([])
 
@@ -159,6 +164,11 @@ const Tasks = () => {
         }
     };
 
+    const deleteTask = (e : React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        e.preventDefault()
+        //TODO: Delete task fn
+    }
+
     const handleNewSession = (e : React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         e.preventDefault();
         axios.post(`https://ordo-backend.fly.dev/task/${editTaskForm[1]}/scheduled-sessions`, {
@@ -183,7 +193,6 @@ const Tasks = () => {
             console.log(err)
             //TODO: Add error handling
         })
-
     }
 
     useEffect(() => {
@@ -209,33 +218,73 @@ const Tasks = () => {
         </div>
     )
     if (user) return (
-        <div className="ml-[14%]">
-            <div>
-                <h1>My tasks</h1>
+        <div className="ml-[14%] bg-gray-100 h-screen w-screen lg:ml-[14%] p-5 font-rubik ">
+            <div className="bg-white rounded-xl p-3 pl-5 pr-5 
+            lg:p-10 lg:pr-20 lg:pl-20 lg:w-[65%] min-h-full text-lg ">
+                <h1 className="font-bold text-2xl text-center mb-10 text-gray-900">
+                    My tasks
+                </h1>
                 <p>Search task</p>
-                <button onClick={() => setNewTaskForm(true)}>
-                    Add new task
+                <button onClick={() => setNewTaskForm(true)}
+                    className="mt-3 hover:cursor-pointer font-bold hover:brightness-110">
+                <FontAwesomeIcon icon={faPlus} className="text-indigo-500 mt-1 mr-1" size="sm"/>
+                    Add New Task
                 </button>
                 {tasks[0] 
                 ? 
                 <div>
-                <h1>Tasks:</h1>
+                <h2 className="text-xl font-bold mb-5 mt-10">
+                <FontAwesomeIcon icon={faListCheck} size="sm"/>
+                    Tasks:
+                </h2>
+
+                <div className="border-[3px] p-2 pl-4 pr-4 border-gray-100 rounded-lg mb-2 w-[48rem] text-lg">
                 {tasks.map((task) => (
-                    <div key={task._id} onClick={() => toggleEditTask(task._id)}>
-                        <p>{task.name}</p>
-                        <p>{task.completedHours} / {task.totalHours}</p>
-                    </div>)
+                    <>
+                    <div key={task._id} onClick={() => toggleEditTask(task._id)}
+                    className="hover:cursor-pointer"> 
+                    <p className="inline font-bold">{task.name} </p>
+                    <p className="inline">({task.completedHours}h / {task.totalHours}h completed)</p>
+                    <button onClick={(e) => deleteTask(e)}
+                        className="inline ml-3 text-red-600 ">
+                        <FontAwesomeIcon icon={faXmark} size="sm" className="mt-1 mr-1"/>
+                        Delete task
+                    </button>
+                    </div>
+                    </>
+                    )
+        
                 )
                 }
+                </div>
+                
                 </div>
                 : (<p>No tasks</p>)
                 }
             </div>
             <Transition show={newTaskForm || editTaskForm[0]}
-                as="div">
-                <form onSubmit={(e) => handleTaskSave(e)}>
+                as="div"
+                enter="transition-all duration-300"
+                enterFrom="translate-x-40 opacity-0"
+                enterTo="translate-x-0 opacity-100"
+                leave="transition-all duration-300"
+                leaveFrom="translate-x-0 opacity-100"
+                leaveTo="translate-x-40 opacity-0"
+                className={`bg-white rounded-l-xl p-5 w-[80%] lg:w-[32%] fixed right-0 top-0 font-rubik h-full text-lg
+                    ${showNav && "brightness-95 pointer-events-none"}`
+                }>
+                    <h2>
+                        {newTaskForm
+                            ? "Create Task"
+                            : "Edit Task"
+                        }
+                    </h2>
+                <form onSubmit={(e) => handleTaskSave(e)}
+                    className="flex flex-col items-center">
                     {formErrors.name && 
-                        <p>Task name must be defined and under 40 characters</p>
+                        <p className="text-red-500">
+                            Task name must be defined and under 40 characters
+                        </p>
                     }
                     <label htmlFor="name">
                         Task name:
